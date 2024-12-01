@@ -2,9 +2,10 @@
 
 namespace Core;
 
-public sealed class PoolableList<T> : IDisposable
+public sealed class PoolableList<T>(int minimumLength = PoolableList<T>.MinLength) : IDisposable
 {
-    private T[] _buffer = ArrayPool<T>.Shared.Rent(16);
+    public const int MinLength = 16;
+    private T[] _buffer = ArrayPool<T>.Shared.Rent(Math.Max(minimumLength, MinLength));
     private int _length;
 
     public void Add(T item)
