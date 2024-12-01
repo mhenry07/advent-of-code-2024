@@ -1,8 +1,8 @@
 ﻿using System.Buffers.Text;
+using System.Text;
 using Core;
 
 var useExample = false;
-
 var exampleBytes = """
 3   4
 4   3
@@ -16,12 +16,12 @@ var bytes = useExample
     ? exampleBytes
     : File.ReadAllBytes("input.txt").AsSpan();
 var index = 0;
-var left = new PoolableList<int>();
-var right = new PoolableList<int>();
+using var left = new PoolableList<int>();
+using var right = new PoolableList<int>();
 foreach (var range in MemoryExtensions.Split(bytes, "\r\n"u8))
 {
     var line = bytes[range];
-    if (line.Length == 0)
+    if (line.IsEmpty)
         continue;
 
     var separatorStart = line.IndexOf((byte)' ');
@@ -33,6 +33,11 @@ foreach (var range in MemoryExtensions.Split(bytes, "\r\n"u8))
         left.Add(l);
         right.Add(r);
     }
+    else
+    {
+        throw new InvalidOperationException($"Failed to parse line: {Encoding.UTF8.GetString(line)}");
+    }
+
     index++;
 }
 
@@ -51,25 +56,23 @@ var previousMatches = 0;
 var similarityScore = 0;
 for (int i = 0, j = 0; i < left.Length; i++)
 {
-    int matches;
     var l = leftSpan[i];
     if (l == previousLeft)
     {
-        matches = previousMatches;
+        similarityScore += l * previousMatches;
+        continue;
     }
-    else
+
+    var matches = 0;
+    while (j < right.Length)
     {
-        matches = 0;
-        while (j < right.Length)
-        {
-            var r = rightSpan[j];
-            if (l < r)
-                break;
-            if (l == r)
-                matches++;
-            if (l >= r)
-                j++;
-        }
+        var r = rightSpan[j];
+        if (l < r)
+            break;
+        if (l == r)
+            matches++;
+        if (l >= r)
+            j++;
     }
 
     previousLeft = l;
