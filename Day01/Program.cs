@@ -2,6 +2,8 @@
 using System.Text;
 using Core;
 
+var start = TimeProvider.System.GetTimestamp();
+
 var useExample = false;
 var exampleBytes = """
 3   4
@@ -49,8 +51,8 @@ var totalDistance = 0;
 for (var i = 0; i < left.Length; i++)
     totalDistance += Math.Abs(leftSpan[i] - rightSpan[i]);
 
-Console.WriteLine($"Total distance: {totalDistance}");
 
+// part 2
 var previousLeft = 0;
 var previousMatches = 0;
 var similarityScore = 0;
@@ -80,4 +82,8 @@ for (int i = 0, j = 0; i < left.Length; i++)
     similarityScore += l * matches;
 }
 
+var elapsed = TimeProvider.System.GetElapsedTime(start);
+
+Console.WriteLine($"Total distance: {totalDistance}");
 Console.WriteLine($"Similarity score: {similarityScore}");
+Console.WriteLine($"Processed {bytes.Length:N0} bytes in: {elapsed.TotalMilliseconds:N3} ms");

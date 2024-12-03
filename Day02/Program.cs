@@ -1,6 +1,8 @@
 ﻿using System.Buffers.Text;
 using System.Text;
 
+var start = TimeProvider.System.GetTimestamp();
+
 var useExample = false;
 var exampleBytes = """
 7 6 4 2 1
@@ -33,8 +35,11 @@ foreach (var lineRange in MemoryExtensions.Split(bytes, "\r\n"u8))
     }
 }
 
+var elapsed = TimeProvider.System.GetElapsedTime(start);
+
 Console.WriteLine($"Safe reports: {safeReports}");
 Console.WriteLine($"Safe reports with Problem Dampener: {dampenerSafeReports}");
+Console.WriteLine($"Processed {bytes.Length:N0} bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
 enum Direction
 {

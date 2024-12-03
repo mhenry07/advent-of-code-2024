@@ -1,5 +1,7 @@
 ﻿using System.Buffers.Text;
 
+var start = TimeProvider.System.GetTimestamp();
+
 int? useExample = null;
 var example1Bytes = "xmul(2,4)%&mul[3,7]!@^do_not_mul(5,5)+mul(32,64]then(mul(11,8)mul(8,5))"u8;
 var example2Bytes = "xmul(2,4)&mul[3,7]!^don't()_mul(5,5)+mul(32,64](mul(11,8)undo()?mul(8,5))"u8;
@@ -58,8 +60,11 @@ for (var i = 0; i < bytes.Length; i++)
         total2 += a * b;
 }
 
+var elapsed = TimeProvider.System.GetElapsedTime(start);
+
 Console.WriteLine($"Part 1 answer: {total1}");
 Console.WriteLine($"Part 2 answer: {total2}");
+Console.WriteLine($"Processed {bytes.Length:N0} bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
 static bool TryReadByte(ReadOnlySpan<byte> bytes, int index, out byte result)
 {
