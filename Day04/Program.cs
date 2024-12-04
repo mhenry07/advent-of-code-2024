@@ -35,8 +35,8 @@ const byte S = (byte)'S';
 const int XmasLength = 4;
 var Xmas = "XMAS"u8;
 var XmasReversed = "SAMX"u8;
-var NorthernDirections = new[] { Direction.Northwest, Direction.North, Direction.Northeast }.AsSpan();
-var SouthernDirections = new[] { Direction.Southwest, Direction.South, Direction.Southeast }.AsSpan();
+ReadOnlySpan<Direction> NorthernDirections = [Direction.Northwest, Direction.North, Direction.Northeast];
+ReadOnlySpan<Direction> SouthernDirections = [Direction.Southwest, Direction.South, Direction.Southeast];
 
 var i = 0;
 var lineLength = 0;
@@ -120,8 +120,7 @@ for (i = 0; i < numLines - 1; i++)
         var sw = nextLine[j - 1];
         var se = nextLine[j + 1];
 
-        if ((nw == M && se == S || nw == S && se == M)
-            && (ne == M && sw == S || ne == S && sw == M))
+        if ((IsMas(nw, se) || IsMas(se, nw)) && (IsMas(ne, sw) || IsMas(sw, ne)))
         {
             //Console.WriteLine($"Found \"X\"-MAS at: {j},{i})");
             total2++;
@@ -158,7 +157,7 @@ static bool IsMatch(
 
     var i = row;
     var j = column;
-    for (var k = 0; k < word.Length; k++)
+    for (var k = 1; k < word.Length; k++)
     {
         var line = bytes[lineRanges[i]];
         if (j < 0 || j >= line.Length)
@@ -174,6 +173,9 @@ static bool IsMatch(
     //Console.WriteLine($"Found at: {column},{row} ({direction})");
     return true;
 }
+
+static bool IsMas(byte first, byte last)
+    => first == M && last == S;
 
 [Flags]
 enum Direction
