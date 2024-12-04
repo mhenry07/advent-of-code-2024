@@ -30,6 +30,8 @@ var bytes = useExample switch
 
 const byte X = (byte)'X';
 const byte M = (byte)'M';
+const byte A = (byte)'A';
+const byte S = (byte)'S';
 const int XmasLength = 4;
 var Xmas = "XMAS"u8;
 var XmasReversed = "SAMX"u8;
@@ -41,16 +43,18 @@ var lineLength = 0;
 Span<Range> lineRanges = default;
 foreach (var lineRange in MemoryExtensions.Split(bytes, "\r\n"u8))
 {
+    var (_, length) = lineRange.GetOffsetAndLength(bytes.Length);
     if (i == 0)
     {
         // assume fixed line length
-        (_, lineLength) = lineRange.GetOffsetAndLength(bytes.Length);
+        lineLength = length;
         if (lineLength == 0)
             throw new InvalidOperationException("Expected non-zero line length");
         lineRanges = new Range[(int)Math.Ceiling(bytes.Length / (lineLength + 2.0)) + 1].AsSpan();
     }
 
-    lineRanges[i++] = lineRange;
+    if (length > 0)
+        lineRanges[i++] = lineRange;
 }
 
 var numLines = i;
@@ -96,9 +100,39 @@ for (i = 0; i < numLines; i++)
     }
 }
 
+var total2 = 0;
+for (i = 0; i < numLines - 1; i++)
+{
+    var prevLine = i > 0 ? line : default;
+    line = i > 0 ? nextLine : bytes[lineRanges[i]];
+    nextLine = bytes[lineRanges[i + 1]];
+
+    if (i == 0)
+        continue;
+
+    for (var j = 1; j < line.Length - 1; j++)
+    {
+        if (line[j] != A)
+            continue;
+
+        var nw = prevLine[j - 1];
+        var ne = prevLine[j + 1];
+        var sw = nextLine[j - 1];
+        var se = nextLine[j + 1];
+
+        if ((nw == M && se == S || nw == S && se == M)
+            && (ne == M && sw == S || ne == S && sw == M))
+        {
+            //Console.WriteLine($"Found \"X\"-MAS at: {j},{i})");
+            total2++;
+        }
+    }
+}
+
 var elapsed = TimeProvider.System.GetElapsedTime(start);
 
 Console.WriteLine($"XMAS appearances: {total1}");
+Console.WriteLine($"\"X\"-MAS appearances: {total2}");
 Console.WriteLine($"Processed {bytes.Length:N0} bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
 static bool IsMatch(
