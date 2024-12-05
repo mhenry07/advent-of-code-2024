@@ -120,7 +120,7 @@ static bool IsCorrectlyOrderedCore(HashSet<Rule> rules, ReadOnlySpan<byte> pageN
     middlePageNumber = 0;
     for (var i = 0; i < pageNumbers.Length - 1; i++)
     {
-        for (var j = i; j < pageNumbers.Length; j++)
+        for (var j = i + 1; j < pageNumbers.Length; j++)
         {
             var check = new Rule(pageNumbers[j], pageNumbers[i]);
             if (rules.Contains(check))
@@ -134,16 +134,21 @@ static bool IsCorrectlyOrderedCore(HashSet<Rule> rules, ReadOnlySpan<byte> pageN
 
 static void CorrectOrdering(HashSet<Rule> rules, ReadOnlySpan<byte> pageNumbers, out byte middlePageNumber)
 {
+    const int maxIterations = 1_000;
     Span<byte> reordered = stackalloc byte[pageNumbers.Length];
     pageNumbers.CopyTo(reordered);
 
+    var k = 0;
     var ordering = true;
     while (ordering)
     {
+        if (k++ > maxIterations)
+            throw new InvalidOperationException($"Likely infinite loop detected for page numbers: {string.Join(',', pageNumbers.ToArray())}");
+
         ordering = false;
         for (var i = 0; i < reordered.Length - 1; i++)
         {
-            for (var j = i; j < reordered.Length; j++)
+            for (var j = i + 1; j < reordered.Length; j++)
             {
                 var check = new Rule(reordered[j], reordered[i]);
                 if (rules.Contains(check))
