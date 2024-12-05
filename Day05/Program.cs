@@ -43,10 +43,13 @@ var bytes = useExample switch
 
 const int PageOrderingRulesSection = 1;
 const int PageUpdatesSection = 2;
+const int RuleLineLength = 5;
 
-var rules = new HashSet<Rule>();
-var section = 1;
+var rulesCapacity = bytes.Length / (RuleLineLength + 2); // overestimate but that's ok
+var rules = new HashSet<Rule>(rulesCapacity);
+var section = PageOrderingRulesSection;
 var total1 = 0;
+var total2 = 0;
 foreach (var lineRange in bytes.Split("\r\n"u8))
 {
     var line = bytes[lineRange];
@@ -67,12 +70,15 @@ foreach (var lineRange in bytes.Split("\r\n"u8))
     {
         if (IsCorrectlyOrdered(rules, line, out var middlePageNumber))
             total1 += middlePageNumber;
+        else
+            total2 += middlePageNumber;
     }
 }
 
 var elapsed = TimeProvider.System.GetElapsedTime(start);
 
 Console.WriteLine($"Part 1 answer: {total1}");
+Console.WriteLine($"Part 2 answer: {total2}");
 Console.WriteLine($"Processed {bytes.Length:N0} bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
 static bool TryParseRule(ReadOnlySpan<byte> line, out Rule rule)
@@ -102,10 +108,19 @@ static bool IsCorrectlyOrdered(HashSet<Rule> rules, ReadOnlySpan<byte> line, out
         pageNumbers[i++] = pageNumber;
     }
 
+    var isCorrectlyOrdered = IsCorrectlyOrderedCore(rules, pageNumbers, out middlePageNumber);
+    if (!isCorrectlyOrdered)
+        CorrectOrdering(rules, pageNumbers, out middlePageNumber);
+
+    return isCorrectlyOrdered;
+}
+
+static bool IsCorrectlyOrderedCore(HashSet<Rule> rules, ReadOnlySpan<byte> pageNumbers, out byte middlePageNumber)
+{
     middlePageNumber = 0;
-    for (i = 0; i < count - 1; i++)
+    for (var i = 0; i < pageNumbers.Length - 1; i++)
     {
-        for (var j = i; j < count; j++)
+        for (var j = i; j < pageNumbers.Length; j++)
         {
             var check = new Rule(pageNumbers[j], pageNumbers[i]);
             if (rules.Contains(check))
@@ -113,8 +128,35 @@ static bool IsCorrectlyOrdered(HashSet<Rule> rules, ReadOnlySpan<byte> line, out
         }
     }
 
-    middlePageNumber = pageNumbers[count / 2];
+    middlePageNumber = pageNumbers[pageNumbers.Length / 2];
     return true;
 }
 
-record struct Rule(int X, int Y);
+static void CorrectOrdering(HashSet<Rule> rules, ReadOnlySpan<byte> pageNumbers, out byte middlePageNumber)
+{
+    Span<byte> reordered = stackalloc byte[pageNumbers.Length];
+    pageNumbers.CopyTo(reordered);
+
+    var ordering = true;
+    while (ordering)
+    {
+        ordering = false;
+        for (var i = 0; i < reordered.Length - 1; i++)
+        {
+            for (var j = i; j < reordered.Length; j++)
+            {
+                var check = new Rule(reordered[j], reordered[i]);
+                if (rules.Contains(check))
+                {
+                    reordered[i] = check.X;
+                    reordered[j] = check.Y;
+                    ordering = true;
+                }
+            }
+        }
+    }
+
+    middlePageNumber = reordered[reordered.Length / 2];
+}
+
+record struct Rule(byte X, byte Y);
