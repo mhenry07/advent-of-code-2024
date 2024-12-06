@@ -25,6 +25,7 @@ const byte GuardUp = (byte)'^';
 Guard guard = default;
 var i = 0;
 Span<Range> lineRanges = default;
+int numObstructions = 0;
 foreach (var lineRange in MemoryExtensions.Split(bytes, "\r\n"u8))
 {
     var line = bytes[lineRange];
@@ -44,9 +45,14 @@ foreach (var lineRange in MemoryExtensions.Split(bytes, "\r\n"u8))
     if (index != -1)
         guard = new Guard(index, i, Direction.Up);
 
+    for (var j = 0; j < line.Length; j++)
+        if (line[j] == Map.Obstruction)
+            numObstructions++;
+
     i++;
 }
 
+var guardStart = guard;
 var map = new Map(bytes, lineRanges);
 map.MarkPath(guard.X, guard.Y);
 while (map.TryMove(ref guard))
@@ -56,14 +62,61 @@ while (map.TryMove(ref guard))
 
 var total1 = map.CountVisitedPositions();
 
+Span<byte> bytes2 = new byte[bytes.Length];
+var maxTurns = (numObstructions + 1) * 4;
+var total2 = 0;
+for (i = 0; i < map.Height; i++)
+{
+    for (var j = 0; j < map.Width; j++)
+    {
+        if (j == guardStart.X && i == guardStart.Y)
+            continue;
+
+        if (!map.ShouldAddObstruction(j, i))
+            continue;
+
+        //Console.WriteLine($"Attempting to add obstruction at {j}, {i}");
+        bytes.CopyTo(bytes2);
+        var map2 = new Map(bytes2, lineRanges);
+        map2.AddObstruction(j, i);
+
+        var guard2 = guardStart;
+        var lastDirection = guard2.Direction;
+        var numTurns = 0;
+        var isLoop = false;
+        while (map2.TryMove(ref guard2))
+        {
+            //Console.WriteLine($"Moved to {guard2.X}, {guard2.Y}");
+            if (guard2.Direction != lastDirection)
+            {
+                //Console.WriteLine($"Turned at {guard2.X}, {guard2.Y}, {guard2.Direction} (turn # {numTurns + 1})");
+                lastDirection = guard2.Direction;
+                numTurns++;
+            }
+
+            if (numTurns > maxTurns)
+            {
+                isLoop = true;
+                break;
+            }
+        }
+
+        if (isLoop)
+            total2++;
+    }
+}
+
+
 var elapsed = TimeProvider.System.GetElapsedTime(start);
 
 Console.WriteLine($"Part 1 answer: {total1}");
+Console.WriteLine($"Part 2 answer: {total2}");
 Console.WriteLine($"Processed {bytes.Length:N0} bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
 ref struct Map
 {
-    const byte Obstacle = (byte)'#';
+    public const byte Obstruction = (byte)'#';
+    const byte NewObstruction = (byte)'O';
     const byte Visited = (byte)'X';
     private readonly Span<byte> _bytes;
     private readonly ReadOnlySpan<Range> _lineRanges;
@@ -78,6 +131,9 @@ ref struct Map
 
     public int Height { get; }
     public int Width { get; }
+
+    public void AddObstruction(int x, int y)
+        => _bytes[_lineRanges[y]][x] = NewObstruction;
 
     public readonly int CountVisitedPositions()
     {
@@ -98,6 +154,10 @@ ref struct Map
         line[x] = Visited;
     }
 
+    // it's only relevant to add new obstructions to previously visited positions
+    public readonly bool ShouldAddObstruction(int x, int y)
+        => TryGet(x, y, out var result) && result == Visited;
+
     public readonly bool TryMove(ref Guard guard)
     {
         var nextX = guard.X + guard.Direction switch
@@ -116,7 +176,7 @@ ref struct Map
         if (!TryGet(nextX, nextY, out var result))
             return false;
 
-        if (result == Obstacle)
+        if (result == Obstruction || result == NewObstruction)
         {
             guard.Direction = guard.Direction switch
             {
