@@ -71,7 +71,7 @@ while (map.TryMove(ref guard))
     }
 }
 
-var total1 = map.CountVisitedPositions();
+var total1 = guardPositions.Count;
 
 var attemptedMoves2 = 0L;
 var attemptedTurns2 = 0L;
@@ -163,16 +163,6 @@ ref struct Map
 
     public int Height { get; }
     public int Width { get; }
-
-    public readonly int CountVisitedPositions()
-    {
-        var total = 0;
-        foreach (var b in _bytes)
-            if (b == Visited)
-                total++;
-
-        return total;
-    }
 
     public readonly bool IsInBounds(int x, int y)
         => x >= 0 && x < Width && y >= 0 && y < Height;
