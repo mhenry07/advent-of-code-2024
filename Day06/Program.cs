@@ -52,12 +52,21 @@ foreach (var lineRange in MemoryExtensions.Split(bytes, "\r\n"u8))
     i++;
 }
 
+var guardHash = new HashSet<Position>(bytes.Length);
+var guardPositions = new Stack<Guard>(bytes.Length);
 var guardStart = guard;
 var map = new Map(bytes, lineRanges);
 map.MarkPath(guard.X, guard.Y);
+guardHash.Add(guard.Position);
+guardPositions.Push(guard);
 while (map.TryMove(ref guard))
 {
     map.MarkPath(guard.X, guard.Y);
+    if (!guardHash.Contains(guard.Position))
+    {
+        guardHash.Add(guard.Position);
+        guardPositions.Push(guard);
+    }
 }
 
 var total1 = map.CountVisitedPositions();
@@ -71,50 +80,50 @@ var map2 = new Map(bytes2, lineRanges);
 // but with the given input, I still get the correct answer even with `maxTurns = (numObstructions + 1)`
 var maxTurns = (numObstructions + 1) * 4;
 var total2 = 0;
-for (i = 0; i < map2.Height; i++)
+while (guardPositions.TryPop(out var guardPosition) && guardPositions.TryPeek(out var guard2))
 {
-    for (var j = 0; j < map2.Width; j++)
+    var position = guardPosition.Position;
+    if (position.X == guardStart.X && position.Y == guardStart.Y)
+        continue;
+
+    if (!map2.TryAddObstruction(position.X, position.Y, out var previous))
+        continue;
+
+    //Console.WriteLine($"Attempting to add obstruction at {j}, {i}");
+
+    var lastDirection = guard2.Direction;
+    var numTurns = 0;
+    var isLoop = false;
+    while (map2.TryMove(ref guard2))
     {
-        if (j == guardStart.X && i == guardStart.Y)
-            continue;
+        attemptedMoves2++;
 
-        if (!map2.TryAddObstruction(j, i, out var previous))
-            continue;
-
-        //Console.WriteLine($"Attempting to add obstruction at {j}, {i}");
-
-        var guard2 = guardStart;
-        var lastDirection = guard2.Direction;
-        var numTurns = 0;
-        var isLoop = false;
-        while (map2.TryMove(ref guard2))
+        //Console.WriteLine($"Moved to {guard2.X}, {guard2.Y}");
+        if (guard2.Direction != lastDirection)
         {
-            attemptedMoves2++;
-
-            //Console.WriteLine($"Moved to {guard2.X}, {guard2.Y}");
-            if (guard2.Direction != lastDirection)
-            {
-                //Console.WriteLine($"Turned at {guard2.X}, {guard2.Y}, {guard2.Direction} (turn # {numTurns + 1})");
-                lastDirection = guard2.Direction;
-                numTurns++;
-                attemptedTurns2++;
-            }
-
-            if (numTurns > maxTurns)
-            {
-                isLoop = true;
-                break;
-            }
+            //Console.WriteLine($"Turned at {guard2.X}, {guard2.Y}, {guard2.Direction} (turn # {numTurns + 1})");
+            lastDirection = guard2.Direction;
+            numTurns++;
+            attemptedTurns2++;
         }
 
-        if (isLoop)
-            total2++;
-
-        map2.Set(j, i, previous);
+        if (numTurns > maxTurns)
+        {
+            isLoop = true;
+            break;
+        }
     }
+
+    if (isLoop)
+        total2++;
+
+    map2.Set(position.X, position.Y, previous);
 }
 
 var elapsed = TimeProvider.System.GetElapsedTime(start);
+
+if (total2 != 2162)
+    Console.WriteLine($"Wrong answer. Expected: 2162, Actual: {total2}");
 
 Console.WriteLine($"Part 1 answer: {total1}");
 Console.WriteLine($"Part 2 answer: {total2}");
@@ -232,4 +241,9 @@ enum Direction
     Right
 }
 
-record struct Guard(int X, int Y, Direction Direction);
+record struct Guard(int X, int Y, Direction Direction)
+{
+    public readonly Position Position => new(X, Y);
+}
+
+record struct Position(int X, int Y);
