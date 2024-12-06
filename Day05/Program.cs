@@ -103,7 +103,8 @@ static bool IsCorrectlyOrdered(HashSet<Rule> rules, ReadOnlySpan<byte> line, out
     foreach (var numberRange in line.Split((byte)','))
     {
         if (!Utf8Parser.TryParse(line[numberRange], out byte pageNumber, out _))
-            throw new InvalidOperationException($"Failed to parse page number from {Encoding.UTF8.GetString(line[numberRange])}");
+            throw new InvalidOperationException(
+                $"Failed to parse page number from {Encoding.UTF8.GetString(line[numberRange])}");
 
         pageNumbers[i++] = pageNumber;
     }
@@ -143,7 +144,8 @@ static void CorrectOrdering(HashSet<Rule> rules, ReadOnlySpan<byte> pageNumbers,
     while (ordering)
     {
         if (k++ > maxIterations)
-            throw new InvalidOperationException($"Likely infinite loop detected for page numbers: {string.Join(',', pageNumbers.ToArray())}");
+            throw new InvalidOperationException(
+                $"Likely infinite loop detected for page numbers: {string.Join(',', pageNumbers.ToArray())}");
 
         ordering = false;
         for (var i = 0; i < reordered.Length - 1; i++)
