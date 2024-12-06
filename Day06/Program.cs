@@ -64,11 +64,8 @@ guardPositions.Push(guard);
 while (map.TryMove(ref guard))
 {
     map.MarkPath(guard.X, guard.Y);
-    if (!guardHash.Contains(guard.Position))
-    {
-        guardHash.Add(guard.Position);
+    if (guardHash.Add(guard.Position))
         guardPositions.Push(guard);
-    }
 }
 
 var total1 = guardPositions.Count;
@@ -79,8 +76,9 @@ Span<byte> bytes2 = new byte[bytes.Length];
 bytes.CopyTo(bytes2);
 var map2 = new Map(bytes2, lineRanges);
 // it's theoretically possible to hit an obstruction from all 4 sides
-// but with the given input, I still get the correct answer even with `maxTurns = (numObstructions + 1)`
+// but with the given input, I still get the correct answer even with `maxTurns = (numObstructions + 1) / 4`
 var maxTurns = (numObstructions + 1) * 4;
+var loopHash = new HashSet<Guard>(maxTurns);
 var total2 = 0;
 while (guardPositions.TryPop(out var guardPosition) && guardPositions.TryPeek(out var guard2))
 {
@@ -110,7 +108,7 @@ while (guardPositions.TryPop(out var guardPosition) && guardPositions.TryPeek(ou
             attemptedTurns2++;
         }
 
-        if (numTurns > maxTurns)
+        if (!loopHash.Add(guard2))
         {
             isLoop = true;
             //Console.WriteLine($"Loop found at {position.X}, {position.Y}");
@@ -121,6 +119,7 @@ while (guardPositions.TryPop(out var guardPosition) && guardPositions.TryPeek(ou
     if (isLoop)
         total2++;
 
+    loopHash.Clear();
     map2.Set(position.X, position.Y, previous);
 }
 
