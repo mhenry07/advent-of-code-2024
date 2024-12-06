@@ -1,4 +1,6 @@
-﻿var start = TimeProvider.System.GetTimestamp();
+﻿using System.Buffers;
+
+var start = TimeProvider.System.GetTimestamp();
 
 bool useExample = false;
 var exampleBytes = """
@@ -23,7 +25,7 @@ var bytes = useExample switch
 const byte GuardUp = (byte)'^';
 
 Guard guard = default;
-var i = 0;
+short i = 0;
 Span<Range> lineRanges = default;
 int numObstructions = 0;
 foreach (var lineRange in MemoryExtensions.Split(bytes, "\r\n"u8))
@@ -43,7 +45,7 @@ foreach (var lineRange in MemoryExtensions.Split(bytes, "\r\n"u8))
 
     var index = line.IndexOf(GuardUp);
     if (index != -1)
-        guard = new Guard(index, i, Direction.Up);
+        guard = new Guard((short)index, i, Direction.Up);
 
     for (var j = 0; j < line.Length; j++)
         if (line[j] == Map.Obstruction)
@@ -89,12 +91,13 @@ while (guardPositions.TryPop(out var guardPosition) && guardPositions.TryPeek(ou
     if (!map2.TryAddObstruction(position.X, position.Y, out var previous))
         continue;
 
-    //Console.WriteLine($"Attempting to add obstruction at {j}, {i}");
+    //Console.WriteLine($"Attempting to add obstruction at {position.X}, {position.Y}");
 
+    //guard2 = guardStart; // testing
+    var isLoop = false;
     var lastDirection = guard2.Direction;
     var numTurns = 0;
-    var isLoop = false;
-    while (map2.TryMove(ref guard2))
+    while (map2.TryMoveFast(ref guard2))
     {
         attemptedMoves2++;
 
@@ -110,6 +113,7 @@ while (guardPositions.TryPop(out var guardPosition) && guardPositions.TryPeek(ou
         if (numTurns > maxTurns)
         {
             isLoop = true;
+            //Console.WriteLine($"Loop found at {position.X}, {position.Y}");
             break;
         }
     }
@@ -122,8 +126,9 @@ while (guardPositions.TryPop(out var guardPosition) && guardPositions.TryPeek(ou
 
 var elapsed = TimeProvider.System.GetElapsedTime(start);
 
-if (total2 != 2162)
-    Console.WriteLine($"Wrong answer. Expected: 2162, Actual: {total2}");
+var expected = useExample ? 6 : 2162;
+if (total2 != expected)
+    Console.WriteLine($"Wrong answer. Expected: {expected}, Actual: {total2}");
 
 Console.WriteLine($"Part 1 answer: {total1}");
 Console.WriteLine($"Part 2 answer: {total2}");
@@ -135,7 +140,9 @@ ref struct Map
     public const byte Obstruction = (byte)'#';
     const byte NewObstruction = (byte)'O';
     const byte Visited = (byte)'X';
+    private static readonly SearchValues<byte> ObstacleSearchValues = SearchValues.Create("#O"u8);
     private readonly Span<byte> _bytes;
+    private readonly Span<byte[]> _columnBytes;
     private readonly ReadOnlySpan<Range> _lineRanges;
 
     public Map(Span<byte> bytes, ReadOnlySpan<Range> lineRanges)
@@ -144,6 +151,14 @@ ref struct Map
         _lineRanges = lineRanges;
         Height = lineRanges.Length;
         Width = bytes[lineRanges[0]].Length;
+
+        _columnBytes = new byte[Width][];
+        for (var i = 0; i < _columnBytes.Length; i++)
+        {
+            Span<byte> column = _columnBytes[i] = new byte[Height];
+            for (var j = 0; j < column.Length; j++)
+                column[j] = bytes[lineRanges[j]][i];
+        }
     }
 
     public int Height { get; }
@@ -167,8 +182,10 @@ ref struct Map
 
     public byte Set(int x, int y, byte value)
     {
-        var previous = _bytes[_lineRanges[y]][x];
-        _bytes[_lineRanges[y]][x] = value;
+        var row = _bytes[_lineRanges[y]];
+        var previous = row[x];
+        row[x] = value;
+        _columnBytes[x][y] = value;
         return previous;
     }
 
@@ -183,6 +200,17 @@ ref struct Map
 
         previous = default;
         return false;
+    }
+
+    public readonly bool TryGet(int x, int y, out byte result)
+    {
+        result = default;
+        if (!IsInBounds(x, y))
+            return false;
+
+        var line = _bytes[_lineRanges[y]];
+        result = line[x];
+        return true;
     }
 
     public readonly bool TryMove(ref Guard guard)
@@ -205,35 +233,80 @@ ref struct Map
 
         if (result == Obstruction || result == NewObstruction)
         {
-            guard.Direction = guard.Direction switch
-            {
-                Direction.Up => Direction.Right,
-                Direction.Right => Direction.Down,
-                Direction.Down => Direction.Left,
-                Direction.Left => Direction.Up,
-                _ => throw new InvalidOperationException("Unexpected direction")
-            };
+            guard.Direction = TurnRight(guard.Direction);
             return true;
         }
 
-        guard.X = nextX;
-        guard.Y = nextY;
+        guard.X = (short)nextX;
+        guard.Y = (short)nextY;
         return true;
     }
 
-    public readonly bool TryGet(int x, int y, out byte result)
+    // this can be used when we don't need to mark the path
+    public readonly bool TryMoveFast(ref Guard guard)
     {
-        result = default;
-        if (!IsInBounds(x, y))
-            return false;
+        Span<byte> column;
+        Span<byte> row;
+        int index;
+        switch (guard.Direction)
+        {
+            case Direction.Up:
+                column = _columnBytes[guard.X];
+                index = column[..guard.Y].LastIndexOfAny(ObstacleSearchValues);
+                if (index == -1)
+                    return false;
 
-        var line = _bytes[_lineRanges[y]];
-        result = line[x];
-        return true;
+                guard.Direction = Direction.Right;
+                guard.Y = (short)(index + 1);
+                return true;
+
+            case Direction.Down:
+                column = _columnBytes[guard.X];
+                index = column[guard.Y..].IndexOfAny(ObstacleSearchValues);
+                if (index == -1)
+                    return false;
+
+                guard.Direction = Direction.Left;
+                guard.Y += (short)(index - 1);
+                return true;
+
+            case Direction.Left:
+                row = _bytes[_lineRanges[guard.Y]];
+                index = row[..guard.X].LastIndexOfAny(ObstacleSearchValues);
+                if (index == -1)
+                    return false;
+
+                guard.Direction = Direction.Up;
+                guard.X = (short)(index + 1);
+                return true;
+
+            case Direction.Right:
+                row = _bytes[_lineRanges[guard.Y]];
+                index = row[guard.X..].IndexOfAny(ObstacleSearchValues);
+                if (index == -1)
+                    return false;
+
+                guard.Direction = Direction.Down;
+                guard.X += (short)(index - 1);
+                return true;
+
+            default:
+                throw new InvalidOperationException();
+        }
     }
+
+    public static Direction TurnRight(Direction direction)
+        => direction switch
+        {
+            Direction.Up => Direction.Right,
+            Direction.Right => Direction.Down,
+            Direction.Down => Direction.Left,
+            Direction.Left => Direction.Up,
+            _ => throw new InvalidOperationException("Unexpected direction")
+        };
 }
 
-enum Direction
+enum Direction : byte
 {
     Up,
     Down,
@@ -241,9 +314,9 @@ enum Direction
     Right
 }
 
-record struct Guard(int X, int Y, Direction Direction)
+record struct Guard(short X, short Y, Direction Direction)
 {
     public readonly Position Position => new(X, Y);
 }
 
-record struct Position(int X, int Y);
+record struct Position(short X, short Y);
