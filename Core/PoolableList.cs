@@ -27,6 +27,12 @@ public sealed class PoolableList<T>(int minimumLength = PoolableList<T>.MinLengt
 
     public Span<T> Span => _buffer.AsSpan(0, _length);
 
+    public void Clear()
+    {
+        _buffer.AsSpan().Clear();
+        _length = 0;
+    }
+
     public void Dispose()
     {
         ArrayPool<T>.Shared.Return(_buffer);
