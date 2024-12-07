@@ -1,4 +1,5 @@
 ﻿using System.Buffers;
+using System.Collections.Concurrent;
 
 var start = TimeProvider.System.GetTimestamp();
 
@@ -14,23 +15,24 @@ var exampleBytes = """
 ........#.
 #.........
 ......#...
-"""u8.ToArray().AsSpan();
+"""u8.ToArray();
 
 var bytes = useExample switch
 {
     true => exampleBytes,
-    _ => File.ReadAllBytes("input.txt").AsSpan()
+    _ => File.ReadAllBytes("input.txt")
 };
 
 const byte GuardUp = (byte)'^';
 
 Guard guard = default;
 short i = 0;
-Span<Range> lineRanges = default;
+Range[] lineRanges = [];
 int numObstructions = 0;
-foreach (var lineRange in MemoryExtensions.Split(bytes, "\r\n"u8))
+var bytesSpan = bytes.AsSpan();
+foreach (var lineRange in MemoryExtensions.Split(bytesSpan, "\r\n"u8))
 {
-    var line = bytes[lineRange];
+    var line = bytesSpan[lineRange];
     if (line.IsEmpty)
         break;
 
@@ -54,8 +56,37 @@ foreach (var lineRange in MemoryExtensions.Split(bytes, "\r\n"u8))
     i++;
 }
 
+var attemptedMoves2 = 0L;
+var attemptedTurns2 = 0L;
+var degreeOfParallelism = Environment.ProcessorCount - 1;
+var guardMovements = new BlockingCollection<GuardMovement>(bytes.Length);
+// it's theoretically possible to hit an obstruction from all 4 sides
+// but with the given input, loops can be detected correctly even with `maxTurns = (numObstructions + 1) / 4`
+var maxTurns = (numObstructions + 1) * 4;
+var total2 = 0;
+var tasks = Enumerable.Range(0, degreeOfParallelism).Select(_ => Task.Run(() =>
+{
+    var attemptedMoves = 0L;
+    var attemptedTurns = 0L;
+    var bytesCopy = bytes.ToArray();
+    var loopHash = new HashSet<Guard>(maxTurns / 16); // use a more practical initial capacity
+    var map = new Map(bytesCopy, lineRanges);
+    var total = 0;
+    while (!guardMovements.IsCompleted)
+    {
+        if (guardMovements.TryTake(out var guardMovement)
+            && TestMovementsWithNewObstacle(in map, in guardMovement, loopHash, ref attemptedMoves, ref attemptedTurns))
+            total++;
+    }
+
+    Interlocked.Add(ref attemptedMoves2, attemptedMoves);
+    Interlocked.Add(ref attemptedTurns2, attemptedTurns);
+    Interlocked.Add(ref total2, total);
+})).ToArray();
+
 var guardHash = new HashSet<Position>(bytes.Length);
 var guardPositions = new Stack<Guard>(bytes.Length);
+var guardPrevious = guard;
 var guardStart = guard;
 var map = new Map(bytes, lineRanges);
 map.MarkPath(guard.X, guard.Y);
@@ -65,47 +96,53 @@ while (map.TryMove(ref guard))
 {
     map.MarkPath(guard.X, guard.Y);
     if (guardHash.Add(guard.Position))
+    {
+        guardMovements.Add(new(guardPrevious, guard.Position));
         guardPositions.Push(guard);
+    }
+    guardPrevious = guard;
 }
 
+guardMovements.CompleteAdding();
 var total1 = guardPositions.Count;
+var elapsed1 = TimeProvider.System.GetElapsedTime(start);
 
-var attemptedMoves2 = 0L;
-var attemptedTurns2 = 0L;
-Span<byte> bytes2 = new byte[bytes.Length];
-bytes.CopyTo(bytes2);
-var map2 = new Map(bytes2, lineRanges);
-// it's theoretically possible to hit an obstruction from all 4 sides
-// but with the given input, I still get the correct answer even with `maxTurns = (numObstructions + 1) / 4`
-var maxTurns = (numObstructions + 1) * 4;
-var loopHash = new HashSet<Guard>(maxTurns);
-var total2 = 0;
-while (guardPositions.TryPop(out var guardPosition) && guardPositions.TryPeek(out var guard2))
+
+Task.WaitAll(tasks);
+
+var elapsed = TimeProvider.System.GetElapsedTime(start);
+
+Console.WriteLine($"Part 1 answer: {total1}");
+Console.WriteLine($"Part 2 answer: {total2}");
+Console.WriteLine($"Part 2 attempted moves: {attemptedMoves2:N0}, turns: {attemptedTurns2:N0}");
+Console.WriteLine($"Part 1 elapsed: {elapsed1.TotalMilliseconds:N3} ms");
+Console.WriteLine($"Processed {bytes.Length:N0} bytes in: {elapsed.TotalMilliseconds:N3} ms");
+
+static bool TestMovementsWithNewObstacle(
+    in Map map, in GuardMovement start, HashSet<Guard> loopHash, ref long attemptedMoves, ref long attemptedTurns)
 {
-    var position = guardPosition.Position;
-    if (position == guardStart.Position)
-        continue;
-
-    if (!map2.TryAddObstruction(position.X, position.Y, out var previous))
-        continue;
+    var position = start.Next;
+    if (!map.TryAddObstruction2(position.X, position.Y, out var previous))
+        return false;
 
     //Console.WriteLine($"Attempting to add obstruction at {position.X}, {position.Y}");
 
+    var guard = start.Guard;
     var isLoop = false;
-    var lastDirection = guard2.Direction;
-    while (map2.TryMoveFast(ref guard2))
+    var lastDirection = guard.Direction;
+    while (map.TryMoveFast(ref guard))
     {
-        attemptedMoves2++;
+        attemptedMoves++;
 
-        //Console.WriteLine($"Moved to {guard2.X}, {guard2.Y}");
-        if (guard2.Direction != lastDirection)
+        //Console.WriteLine($"Moved to {guard.X}, {guard.Y}");
+        if (guard.Direction != lastDirection)
         {
-            //Console.WriteLine($"Turned at {guard2.X}, {guard2.Y}, {guard2.Direction} (turn # {numTurns + 1})");
-            lastDirection = guard2.Direction;
-            attemptedTurns2++;
+            //Console.WriteLine($"Turned at {guard.X}, {guard.Y}, {guard.Direction} (turn # {numTurns + 1})");
+            lastDirection = guard.Direction;
+            attemptedTurns++;
         }
 
-        if (!loopHash.Add(guard2))
+        if (!loopHash.Add(guard))
         {
             isLoop = true;
             //Console.WriteLine($"Loop found at {position.X}, {position.Y}");
@@ -113,19 +150,11 @@ while (guardPositions.TryPop(out var guardPosition) && guardPositions.TryPeek(ou
         }
     }
 
-    if (isLoop)
-        total2++;
-
     loopHash.Clear();
-    map2.Set(position.X, position.Y, previous);
+    map.Set(position.X, position.Y, previous);
+
+    return isLoop;
 }
-
-var elapsed = TimeProvider.System.GetElapsedTime(start);
-
-Console.WriteLine($"Part 1 answer: {total1}");
-Console.WriteLine($"Part 2 answer: {total2}");
-Console.WriteLine($"Part 2 attempted moves: {attemptedMoves2:N0}, turns: {attemptedTurns2:N0}");
-Console.WriteLine($"Processed {bytes.Length:N0} bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
 ref struct Map
 {
@@ -175,6 +204,19 @@ ref struct Map
     {
         // it's only relevant to add new obstructions to previously visited positions
         if (TryGet(x, y, out var result) && result == Visited)
+        {
+            previous = Set(x, y, NewObstruction);
+            return true;
+        }
+
+        previous = default;
+        return false;
+    }
+
+    public bool TryAddObstruction2(int x, int y, out byte previous)
+    {
+        // it's only relevant to add new obstructions to previously visited positions
+        if (TryGet(x, y, out _)) // when parallelizing, board state is stale so we don't have all visited positions
         {
             previous = Set(x, y, NewObstruction);
             return true;
@@ -300,5 +342,7 @@ record struct Guard(short X, short Y, Direction Direction)
 {
     public readonly Position Position => new(X, Y);
 }
+
+record struct GuardMovement(Guard Guard, Position Next);
 
 record struct Position(short X, short Y);
