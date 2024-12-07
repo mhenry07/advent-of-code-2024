@@ -8,6 +8,8 @@ public sealed class PoolableList<T>(int minimumLength = PoolableList<T>.MinLengt
     private T[] _buffer = ArrayPool<T>.Shared.Rent(Math.Max(minimumLength, MinLength));
     private int _length;
 
+    public T this[int index] => _buffer[index];
+
     public void Add(T item)
     {
         if (_length == _buffer.Length)

@@ -16,15 +16,31 @@ var exampleBytes = """
 192: 17 8 14
 21037: 9 7 18 13
 292: 11 6 16 20
-"""u8;
+"""u8.ToArray();
 
 var bytes = useExample switch
 {
     true => exampleBytes,
-    _ => File.ReadAllBytes("input.txt").AsSpan()
+    _ => File.ReadAllBytes("input.txt")
 };
 
-var (total1, total2) = ProcessInput(bytes);
+using var lines = new PoolableList<ReadOnlyMemory<byte>>();
+foreach (var lineRange in MemoryExtensions.Split(bytes, "\r\n"u8))
+{
+    var line = bytes.AsMemory(lineRange);
+    if (!line.IsEmpty)
+        lines.Add(line);
+}
+
+var total1 = 0L;
+var total2 = 0L;
+
+Parallel.For(0, lines.Length, i =>
+{
+    var (t1, t2) = ProcessInput(lines[i].Span);
+    Interlocked.Add(ref total1, t1);
+    Interlocked.Add(ref total2, t2);
+});
 
 var elapsed = TimeProvider.System.GetElapsedTime(start);
 
@@ -32,42 +48,38 @@ Console.WriteLine($"Part 1 answer: {total1}");
 Console.WriteLine($"Part 2 answer: {total2}");
 Console.WriteLine($"Processed {bytes.Length:N0} bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
-static (long Total1, long Total2) ProcessInput(ReadOnlySpan<byte> bytes)
+static (long Total1, long Total2) ProcessInput(ReadOnlySpan<byte> line)
 {
-    var numbersList = new PoolableList<Number>();
+    using var numbersList = new PoolableList<Number>();
     var total1 = 0L;
     var total2 = 0L;
-    foreach (var lineRange in bytes.Split("\r\n"u8))
+
+    if (line.IsEmpty)
+        return (0, 0);
+
+    var colonIndex = line.IndexOf(": "u8);
+    if (colonIndex == -1)
+        throw new InvalidOperationException($"Expected colon in line: {Encoding.UTF8.GetString(line)}");
+
+    if (!Utf8Parser.TryParse(line[..colonIndex], out long testValue, out _))
+        throw new InvalidOperationException($"Expected text value to be a valid number: {Encoding.UTF8.GetString(line)}");
+
+    var slice = line[(colonIndex + 2)..];
+    foreach (var numberRange in slice.Split((byte)' '))
     {
-        var line = bytes[lineRange];
-        if (line.IsEmpty)
-            continue;
+        if (!Number.TryParse(slice[numberRange], out var number))
+            throw new InvalidOperationException($"Expected number: {Encoding.UTF8.GetString(slice[numberRange])}");
 
-        var colonIndex = line.IndexOf(": "u8);
-        if (colonIndex == -1)
-            throw new InvalidOperationException($"Expected colon in line: {Encoding.UTF8.GetString(line)}");
-
-        if (!Utf8Parser.TryParse(line[..colonIndex], out long testValue, out _))
-            throw new InvalidOperationException($"Expected text value to be a valid number: {Encoding.UTF8.GetString(line)}");
-
-        numbersList.Clear();
-        var slice = line[(colonIndex + 2)..];
-        foreach (var numberRange in slice.Split((byte)' '))
-        {
-            if (!Number.TryParse(slice[numberRange], out var number))
-                throw new InvalidOperationException($"Expected number: {Encoding.UTF8.GetString(slice[numberRange])}");
-
-            numbersList.Add(number);
-        }
-
-        var numbers = numbersList.Span;
-        var isValid1 = Calculate(testValue, numbers[0], numbers[1..]);
-        if (isValid1)
-            total1 += testValue;
-
-        if (isValid1 || Calculate2(testValue, numbers[0], numbers[1..]))
-            total2 += testValue;
+        numbersList.Add(number);
     }
+
+    var numbers = numbersList.Span;
+    var isValid1 = Calculate(testValue, numbers[0], numbers[1..]);
+    if (isValid1)
+        total1 += testValue;
+
+    if (isValid1 || Calculate2(testValue, numbers[0], numbers[1..]))
+        total2 += testValue;
 
     return (total1, total2);
 }
