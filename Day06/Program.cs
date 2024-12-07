@@ -83,7 +83,7 @@ var total2 = 0;
 while (guardPositions.TryPop(out var guardPosition) && guardPositions.TryPeek(out var guard2))
 {
     var position = guardPosition.Position;
-    if (position.X == guardStart.X && position.Y == guardStart.Y)
+    if (position == guardStart.Position)
         continue;
 
     if (!map2.TryAddObstruction(position.X, position.Y, out var previous))
@@ -91,10 +91,8 @@ while (guardPositions.TryPop(out var guardPosition) && guardPositions.TryPeek(ou
 
     //Console.WriteLine($"Attempting to add obstruction at {position.X}, {position.Y}");
 
-    //guard2 = guardStart; // testing
     var isLoop = false;
     var lastDirection = guard2.Direction;
-    var numTurns = 0;
     while (map2.TryMoveFast(ref guard2))
     {
         attemptedMoves2++;
@@ -104,7 +102,6 @@ while (guardPositions.TryPop(out var guardPosition) && guardPositions.TryPeek(ou
         {
             //Console.WriteLine($"Turned at {guard2.X}, {guard2.Y}, {guard2.Direction} (turn # {numTurns + 1})");
             lastDirection = guard2.Direction;
-            numTurns++;
             attemptedTurns2++;
         }
 
@@ -124,10 +121,6 @@ while (guardPositions.TryPop(out var guardPosition) && guardPositions.TryPeek(ou
 }
 
 var elapsed = TimeProvider.System.GetElapsedTime(start);
-
-var expected = useExample ? 6 : 2162;
-if (total2 != expected)
-    Console.WriteLine($"Wrong answer. Expected: {expected}, Actual: {total2}");
 
 Console.WriteLine($"Part 1 answer: {total1}");
 Console.WriteLine($"Part 2 answer: {total2}");
