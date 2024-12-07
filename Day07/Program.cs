@@ -68,41 +68,41 @@ static (long Total1, long Total2) ProcessInput(ReadOnlySpan<byte> line)
     }
 
     numbers = numbers[..i];
-    var isValid1 = Calculate(testValue, numbers[0], numbers[1..]);
+    var isValid1 = Calculate(testValue, numbers[0], numbers[1..], 0);
     var total1 = isValid1
         ? testValue
         : 0L;
 
-    var total2 = isValid1 || Calculate2(testValue, numbers[0], numbers[1..])
+    var total2 = isValid1 || Calculate2(testValue, numbers[0], numbers[1..], 0)
         ? testValue
         : 0L;
 
     return (total1, total2);
 }
 
-static bool Calculate(long testValue, Number accumulated, ReadOnlySpan<Number> numbers)
+static bool Calculate(long testValue, Number accumulated, ReadOnlySpan<Number> numbers, int index)
 {
-    if (numbers.IsEmpty)
+    if (index == numbers.Length)
         return accumulated.Value == testValue;
 
     if (accumulated.Value > testValue)
         return false;
 
-    return Calculate(testValue, accumulated + numbers[0], numbers[1..])
-        || Calculate(testValue, accumulated * numbers[0], numbers[1..]);
+    return Calculate(testValue, accumulated + numbers[index], numbers, index + 1)
+        || Calculate(testValue, accumulated * numbers[index], numbers, index + 1);
 }
 
-static bool Calculate2(long testValue, Number accumulated, ReadOnlySpan<Number> numbers)
+static bool Calculate2(long testValue, Number accumulated, ReadOnlySpan<Number> numbers, int index)
 {
-    if (numbers.IsEmpty)
+    if (index == numbers.Length)
         return accumulated.Value == testValue;
 
     if (accumulated.Value > testValue)
         return false;
 
-    return Calculate2(testValue, accumulated + numbers[0], numbers[1..])
-        || Calculate2(testValue, accumulated * numbers[0], numbers[1..])
-        || Calculate2(testValue, accumulated.Concatenate(numbers[0]), numbers[1..]);
+    return Calculate2(testValue, accumulated + numbers[index], numbers, index + 1)
+        || Calculate2(testValue, accumulated * numbers[index], numbers, index + 1)
+        || Calculate2(testValue, accumulated.Concatenate(numbers[index]), numbers, index + 1);
 }
 
 record struct Number(long Value, byte Digits)
