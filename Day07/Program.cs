@@ -34,7 +34,6 @@ foreach (var lineRange in MemoryExtensions.Split(bytes, "\r\n"u8))
 
 var total1 = 0L;
 var total2 = 0L;
-
 Parallel.For(0, lines.Length, i =>
 {
     var (t1, t2) = ProcessInput(lines[i].Span);
@@ -50,13 +49,6 @@ Console.WriteLine($"Processed {bytes.Length:N0} bytes in: {elapsed.TotalMillisec
 
 static (long Total1, long Total2) ProcessInput(ReadOnlySpan<byte> line)
 {
-    using var numbersList = new PoolableList<Number>();
-    var total1 = 0L;
-    var total2 = 0L;
-
-    if (line.IsEmpty)
-        return (0, 0);
-
     var colonIndex = line.IndexOf(": "u8);
     if (colonIndex == -1)
         throw new InvalidOperationException($"Expected colon in line: {Encoding.UTF8.GetString(line)}");
@@ -64,22 +56,26 @@ static (long Total1, long Total2) ProcessInput(ReadOnlySpan<byte> line)
     if (!Utf8Parser.TryParse(line[..colonIndex], out long testValue, out _))
         throw new InvalidOperationException($"Expected text value to be a valid number: {Encoding.UTF8.GetString(line)}");
 
+    var i = 0;
+    Span<Number> numbers = stackalloc Number[64];
     var slice = line[(colonIndex + 2)..];
     foreach (var numberRange in slice.Split((byte)' '))
     {
         if (!Number.TryParse(slice[numberRange], out var number))
             throw new InvalidOperationException($"Expected number: {Encoding.UTF8.GetString(slice[numberRange])}");
 
-        numbersList.Add(number);
+        numbers[i++] = number;
     }
 
-    var numbers = numbersList.Span;
+    numbers = numbers[..i];
     var isValid1 = Calculate(testValue, numbers[0], numbers[1..]);
-    if (isValid1)
-        total1 += testValue;
+    var total1 = isValid1
+        ? testValue
+        : 0L;
 
-    if (isValid1 || Calculate2(testValue, numbers[0], numbers[1..]))
-        total2 += testValue;
+    var total2 = isValid1 || Calculate2(testValue, numbers[0], numbers[1..])
+        ? testValue
+        : 0L;
 
     return (total1, total2);
 }
