@@ -25,6 +25,7 @@ var bytes = useExample switch
 
 using var numbersList = new PoolableList<int>();
 var total1 = 0L;
+var total2 = 0L;
 foreach (var lineRange in bytes.Split("\r\n"u8))
 {
     var line = bytes[lineRange];
@@ -49,13 +50,18 @@ foreach (var lineRange in bytes.Split("\r\n"u8))
     }
 
     var numbers = numbersList.Span;
-    if (Calculate(testValue, numbers[0], numbers[1..]))
+    var isValid1 = Calculate(testValue, numbers[0], numbers[1..]);
+    if (isValid1)
         total1 += testValue;
+
+    if (isValid1 || Calculate2(testValue, numbers[0], numbers[1..]))
+        total2 += testValue;
 }
 
 var elapsed = TimeProvider.System.GetElapsedTime(start);
 
 Console.WriteLine($"Part 1 answer: {total1}");
+Console.WriteLine($"Part 2 answer: {total2}");
 Console.WriteLine($"Processed {bytes.Length:N0} bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
 static bool Calculate(long testValue, long accumulated, ReadOnlySpan<int> numbers)
@@ -63,6 +69,32 @@ static bool Calculate(long testValue, long accumulated, ReadOnlySpan<int> number
     if (numbers.IsEmpty)
         return accumulated == testValue;
 
+    if (accumulated > testValue)
+        return false;
+
     return Calculate(testValue, accumulated + numbers[0], numbers[1..])
         || Calculate(testValue, accumulated * numbers[0], numbers[1..]);
+}
+
+static bool Calculate2(long testValue, long accumulated, ReadOnlySpan<int> numbers)
+{
+    if (numbers.IsEmpty)
+        return accumulated == testValue;
+
+    if (accumulated > testValue)
+        return false;
+
+    return Calculate2(testValue, accumulated + numbers[0], numbers[1..])
+        || Calculate2(testValue, accumulated * numbers[0], numbers[1..])
+        || (TryConcatenate(accumulated, numbers[0], out long concatenated)
+            && Calculate2(testValue, concatenated, numbers[1..]));
+}
+
+static bool TryConcatenate(long left, long right, out long result)
+{
+    Span<byte> buffer = stackalloc byte[64];
+    result = 0L;
+    return Utf8Formatter.TryFormat(left, buffer, out int leftLength)
+        && Utf8Formatter.TryFormat(right, buffer[leftLength..], out int rightLength)
+        && Utf8Parser.TryParse(buffer[..(leftLength + rightLength)], out result, out _);
 }
