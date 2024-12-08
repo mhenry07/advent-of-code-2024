@@ -58,6 +58,7 @@ while (map.TryMove(ref guard))
 guardMovements.CompleteAdding();
 var elapsed1 = TimeProvider.System.GetElapsedTime(start);
 
+executor2.Execute();
 Task.WaitAll(tasks);
 
 var elapsed = TimeProvider.System.GetElapsedTime(start);
