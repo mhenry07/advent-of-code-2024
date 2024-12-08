@@ -127,7 +127,6 @@ class MapData
     public static MapData FromInput(ReadOnlySpan<byte> source, out PoolableList<Antenna>[] antennaFrequencies)
     {
         antennaFrequencies = new PoolableList<Antenna>[128];
-        byte[] rowOrder = [];
         var height = 0;
         var width = 0;
         var y = 0;
@@ -141,10 +140,8 @@ class MapData
             {
                 width = line.Length;
                 height = (int)Math.Ceiling(source.Length / (width + 2.0));
-                rowOrder = new byte[width * height];
             }
 
-            line.CopyTo(rowOrder.AsSpan(y * width));
             for (var x = 0; x < width; x++)
             {
                 var value = line[x];
@@ -163,13 +160,11 @@ class MapData
 
         return new MapData
         {
-            RowOrder = rowOrder,
             Height = height,
             Width = width
         };
     }
 
-    public required byte[] RowOrder { get; init; }
     public int Height { get; init; }
     public int Width { get; init; }
 
