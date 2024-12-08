@@ -58,18 +58,33 @@ var exampleBytes4 = """
 ..........
 """u8.ToArray();
 
+var exampleBytes5 = """
+T.........
+...T......
+.T........
+..........
+..........
+..........
+..........
+..........
+..........
+..........
+"""u8.ToArray();
+
 var bytes = useExample switch
 {
     1 => exampleBytes1,
     2 => exampleBytes2,
     3 => exampleBytes3,
     4 => exampleBytes4,
+    5 => exampleBytes5,
     _ => File.ReadAllBytes("input.txt")
 };
 
 var mapData = MapData.FromInput(bytes, out var antennaFrequencies);
-var antinodes = new HashSet<Position>(antennaFrequencies.Length);
-
+Span<Position> antinodeBuffer = stackalloc Position[Math.Max(mapData.Width, mapData.Height) + 1];
+var antinodes1 = new HashSet<Position>(bytes.Length);
+var antinodes2 = new HashSet<Position>(bytes.Length);
 foreach (var frequency in antennaFrequencies.AsSpan())
 {
     if (frequency is null)
@@ -82,20 +97,26 @@ foreach (var frequency in antennaFrequencies.AsSpan())
         for (var j = i + 1; j < span.Length; j++)
         {
             var b = span[j];
-            a.GetAntinodes(in b, out var antinode1, out var antinode2);
+            a.GetAntinodes1(in b, out var antinode1, out var antinode2);
             if (mapData.IsInBounds(in antinode1))
-                antinodes.Add(antinode1);
+                antinodes1.Add(antinode1);
 
             if (mapData.IsInBounds(in antinode2))
-                antinodes.Add(antinode2);
+                antinodes1.Add(antinode2);
+
+            var length = a.GetAntinodes2(in b, mapData, antinodeBuffer);
+            foreach (var antinode in antinodeBuffer[..length])
+                antinodes2.Add(antinode);
         }
     }
 }
 
-var total1 = antinodes.Count;
+var total1 = antinodes1.Count;
+var total2 = antinodes2.Count;
 var elapsed = TimeProvider.System.GetElapsedTime(start);
 
 Console.WriteLine($"Part 1 answer: {total1}");
+Console.WriteLine($"Part 2 answer: {total2}");
 Console.WriteLine($"Processed {bytes.Length:N0} bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
 class MapData
@@ -158,17 +179,56 @@ class MapData
 
 record struct Antenna(byte Frequency, Position Position)
 {
-    public readonly void GetAntinodes(in Antenna other, out Position antinode1, out Position antinode2)
+    public readonly void GetAntinodes1(in Antenna other, out Position antinode1, out Position antinode2)
     {
         var otherPosition = other.Position;
         Position.GetSegment(in otherPosition, out var dx, out var dy);
         antinode1 = new((sbyte)(otherPosition.X + dx), (sbyte)(otherPosition.Y + dy));
         antinode2 = new((sbyte)(Position.X - dx), (sbyte)(Position.Y - dy));
     }
+
+    public readonly int GetAntinodes2(in Antenna other, MapData mapData, Span<Position> antinodes)
+    {
+        var otherPosition = other.Position;
+        var length = 1;
+        antinodes[0] = Position;
+
+        Position.GetSegment(in otherPosition, out var dx, out var dy);
+        var pos = Position;
+        while (true)
+        {
+            if (length >= antinodes.Length)
+                throw new InvalidOperationException("Exceeded buffer length");
+
+            pos = pos.Add(dx, dy);
+            if (!mapData.IsInBounds(in pos))
+                break;
+
+            antinodes[length++] = pos;
+        }
+
+        pos = Position;
+        while (true)
+        {
+            if (length >= antinodes.Length)
+                throw new InvalidOperationException("Exceeded buffer length");
+
+            pos = pos.Add(-dx, -dy);
+            if (!mapData.IsInBounds(in pos))
+                break;
+
+            antinodes[length++] = pos;
+        }
+
+        return length;
+    }
 }
 
 record struct Position(sbyte X, sbyte Y)
 {
+    public readonly Position Add(int x, int y)
+        => new((sbyte)(X + x), (sbyte)(Y + y));
+
     public readonly void GetSegment(in Position other, out int x, out int y)
     {
         x = other.X - X;
