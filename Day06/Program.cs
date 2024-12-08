@@ -1,5 +1,7 @@
 ﻿using System.Buffers;
 using System.Collections.Concurrent;
+using System.Diagnostics;
+using System.Runtime.CompilerServices;
 
 var start = TimeProvider.System.GetTimestamp();
 
@@ -23,180 +25,221 @@ var bytes = useExample switch
     _ => File.ReadAllBytes("input.txt")
 };
 
-const byte GuardUp = (byte)'^';
-
-Guard guard = default;
-short i = 0;
-Range[] lineRanges = [];
-int numObstructions = 0;
-var bytesSpan = bytes.AsSpan();
-foreach (var lineRange in MemoryExtensions.Split(bytesSpan, "\r\n"u8))
-{
-    var line = bytesSpan[lineRange];
-    if (line.IsEmpty)
-        break;
-
-    if (i == 0)
-    {
-        var width = line.Length;
-        var height = (int)Math.Ceiling(bytes.Length / (width + 2.0));
-        lineRanges = new Range[height];
-    }
-
-    lineRanges[i] = lineRange;
-
-    var index = line.IndexOf(GuardUp);
-    if (index != -1)
-        guard = new Guard((short)index, i, Direction.Up);
-
-    for (var j = 0; j < line.Length; j++)
-        if (line[j] == Map.Obstruction)
-            numObstructions++;
-
-    i++;
-}
-
-var attemptedMoves2 = 0L;
-var attemptedTurns2 = 0L;
 var degreeOfParallelism = Environment.ProcessorCount - 1;
-var guardMovements = new BlockingCollection<GuardMovement>(bytes.Length);
-// it's theoretically possible to hit an obstruction from all 4 sides
-// but with the given input, loops can be detected correctly even with `maxTurns = (numObstructions + 1) / 4`
-var maxTurns = (numObstructions + 1) * 4;
-var total2 = 0;
-var tasks = Enumerable.Range(0, degreeOfParallelism).Select(_ => Task.Run(() =>
-{
-    var attemptedMoves = 0L;
-    var attemptedTurns = 0L;
-    var bytesCopy = bytes.ToArray();
-    var loopHash = new HashSet<Guard>(maxTurns / 16); // use a more practical initial capacity
-    var map = new Map(bytesCopy, lineRanges);
-    var total = 0;
-    while (!guardMovements.IsCompleted)
-    {
-        if (guardMovements.TryTake(out var guardMovement)
-            && TestMovementsWithNewObstacle(in map, in guardMovement, loopHash, ref attemptedMoves, ref attemptedTurns))
-            total++;
-    }
+var mapData = MapData.FromInput(bytes, out var guard, out var numObstructions);
+var guardMovements = new BlockingCollection<GuardMovement>(mapData.Width * mapData.Height);
 
-    Interlocked.Add(ref attemptedMoves2, attemptedMoves);
-    Interlocked.Add(ref attemptedTurns2, attemptedTurns);
-    Interlocked.Add(ref total2, total);
-})).ToArray();
+// part 2 (parallelized)
+var executor2 = new ExecutorPart2(mapData, guardMovements, numObstructions);
+var tasks = new Task[degreeOfParallelism];
+for (var i = 0; i < degreeOfParallelism; i++)
+    tasks[i] = Task.Run(executor2.Execute);
 
+// part 1
 var guardHash = new HashSet<Position>(bytes.Length);
-var guardPositions = new Stack<Guard>(bytes.Length);
 var guardPrevious = guard;
 var guardStart = guard;
-var map = new Map(bytes, lineRanges);
+var map = new Map(mapData);
 map.MarkPath(guard.X, guard.Y);
 guardHash.Add(guard.Position);
-guardPositions.Push(guard);
+var total1 = 1;
 while (map.TryMove(ref guard))
 {
     map.MarkPath(guard.X, guard.Y);
     if (guardHash.Add(guard.Position))
     {
         guardMovements.Add(new(guardPrevious, guard.Position));
-        guardPositions.Push(guard);
+        total1++;
     }
+
     guardPrevious = guard;
 }
 
 guardMovements.CompleteAdding();
-var total1 = guardPositions.Count;
 var elapsed1 = TimeProvider.System.GetElapsedTime(start);
-
 
 Task.WaitAll(tasks);
 
 var elapsed = TimeProvider.System.GetElapsedTime(start);
 
 Console.WriteLine($"Part 1 answer: {total1}");
-Console.WriteLine($"Part 2 answer: {total2}");
-Console.WriteLine($"Part 2 attempted moves: {attemptedMoves2:N0}, turns: {attemptedTurns2:N0}");
+Console.WriteLine($"Part 2 answer: {executor2.Total}");
+Console.WriteLine($"Part 2 attempted moves: {executor2.AttemptedMoves:N0}, turns: {executor2.AttemptedTurns:N0}");
 Console.WriteLine($"Part 1 elapsed: {elapsed1.TotalMilliseconds:N3} ms");
 Console.WriteLine($"Processed {bytes.Length:N0} bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
-static bool TestMovementsWithNewObstacle(
-    in Map map, in GuardMovement start, HashSet<Guard> loopHash, ref long attemptedMoves, ref long attemptedTurns)
+class ExecutorPart2(MapData mapData, BlockingCollection<GuardMovement> guardMovements, int numObstructions)
 {
-    var position = start.Next;
-    if (!map.TryAddObstruction2(position.X, position.Y, out var previous))
-        return false;
+    int _attemptedMoves;
+    int _attemptedTurns;
+    long _total;
+    readonly BlockingCollection<GuardMovement> _guardMovements = guardMovements;
+    readonly MapData _mapData = mapData;
 
-    //Console.WriteLine($"Attempting to add obstruction at {position.X}, {position.Y}");
+    // it's theoretically possible to hit an obstruction from all 4 sides
+    // but with the given input, loops can be detected correctly even with `maxTurns = (numObstructions + 1) / 4`
+    readonly int _maxTurns = (numObstructions + 1) * 4;
 
-    var guard = start.Guard;
-    var isLoop = false;
-    var lastDirection = guard.Direction;
-    while (map.TryMoveFast(ref guard))
+    public int AttemptedMoves => _attemptedMoves;
+    public int AttemptedTurns => _attemptedTurns;
+    public long Total => _total;
+
+    public void Execute()
     {
-        attemptedMoves++;
-
-        //Console.WriteLine($"Moved to {guard.X}, {guard.Y}");
-        if (guard.Direction != lastDirection)
+        var attemptedMoves = 0;
+        var attemptedTurns = 0;
+        var guardMovements = _guardMovements;
+        var loopHashCapacity = _maxTurns / 16; // use a more practical initial capacity
+        var loopHash = new HashSet<Guard>(loopHashCapacity);
+        var map = new ReadOnlyMap(_mapData);
+        var total = 0;
+        while (!guardMovements.IsCompleted)
         {
-            //Console.WriteLine($"Turned at {guard.X}, {guard.Y}, {guard.Direction} (turn # {numTurns + 1})");
-            lastDirection = guard.Direction;
-            attemptedTurns++;
+            if (guardMovements.TryTake(out var guardMovement)
+                && TestMovementsWithNewObstruction(
+                    in map, in guardMovement, loopHash, ref attemptedMoves, ref attemptedTurns))
+            {
+                total++;
+            }
         }
 
-        if (!loopHash.Add(guard))
-        {
-            isLoop = true;
-            //Console.WriteLine($"Loop found at {position.X}, {position.Y}");
-            break;
-        }
+        Interlocked.Add(ref _attemptedMoves, attemptedMoves);
+        Interlocked.Add(ref _attemptedTurns, attemptedTurns);
+        Interlocked.Add(ref _total, total);
     }
 
-    loopHash.Clear();
-    map.Set(position.X, position.Y, previous);
+    static bool TestMovementsWithNewObstruction(
+        in ReadOnlyMap map, in GuardMovement start, HashSet<Guard> loopHash, ref int attemptedMoves,
+        ref int attemptedTurns)
+    {
+        //var builder = new StringBuilder($"Thread {Environment.CurrentManagedThreadId}:\r\n");
+        var newObstruction = start.Next;
 
-    return isLoop;
+        //builder.AppendLine($"Testing obstruction at {newObstruction.X}, {newObstruction.Y}");
+
+        var guard = start.Guard;
+        //builder.AppendLine($"Guard position: {guard.X}, {guard.Y}, {guard.Direction}");
+
+        var isLoop = false;
+        var lastDirection = guard.Direction;
+        var numTurns = 0;
+        while (map.TryMoveFast(ref guard, in newObstruction))
+        {
+            Debug.Assert(guard.X >= 0 && guard.Y >= 0);
+            attemptedMoves++;
+
+            //builder.AppendLine($"- Moved to {guard.X}, {guard.Y}");
+            if (guard.Direction != lastDirection)
+            {
+                //builder.AppendLine($"- Turned at {guard.X}, {guard.Y}, {guard.Direction} (turn # {numTurns + 1})");
+                lastDirection = guard.Direction;
+                attemptedTurns++;
+                numTurns++;
+            }
+
+            if (!loopHash.Add(guard))
+            {
+                isLoop = true;
+                //builder.AppendLine($"Loop found at {newObstruction.X}, {newObstruction.Y}");
+                break;
+            }
+        }
+
+        loopHash.Clear();
+
+        //Console.WriteLine(builder);
+
+        return isLoop;
+    }
 }
 
-ref struct Map
+class MapData
+{
+    const byte GuardUp = (byte)'^';
+    const byte Obstruction = Map.Obstruction;
+
+    public static MapData FromInput(ReadOnlySpan<byte> source, out Guard guard, out int numObstructions)
+    {
+        guard = default;
+        numObstructions = 0;
+
+        byte[] columnOrder = [];
+        byte[] rowOrder = [];
+        var height = 0;
+        var width = 0;
+        var y = 0;
+        foreach (var range in source.Split("\r\n"u8))
+        {
+            var line = source[range];
+            if (line.IsEmpty)
+                break;
+
+            if (y == 0)
+            {
+                width = line.Length;
+                height = (int)Math.Ceiling(source.Length / (width + 2.0));
+                rowOrder = new byte[width * height];
+                columnOrder = new byte[width * height];
+            }
+
+            line.CopyTo(rowOrder.AsSpan(y * width));
+            for (var x = 0; x < width; x++)
+            {
+                var value = line[x];
+                columnOrder[x * height + y] = value;
+                switch (value)
+                {
+                    case GuardUp:
+                        guard = new Guard((short)x, (short)y, Direction.Up);
+                        break;
+                    case Obstruction:
+                        numObstructions++;
+                        break;
+                }
+            }
+
+            y++;
+        }
+
+        return new MapData
+        {
+            ColumnOrder = columnOrder,
+            RowOrder = rowOrder,
+            Height = height,
+            Width = width
+        };
+    }
+
+    public required byte[] ColumnOrder { get; init; }
+    public required byte[] RowOrder { get; init; }
+    public int Height { get; init; }
+    public int Width { get; init; }
+}
+
+struct Map(MapData mapData)
 {
     public const byte Obstruction = (byte)'#';
     const byte NewObstruction = (byte)'O';
     const byte Visited = (byte)'X';
-    private static readonly SearchValues<byte> ObstacleSearchValues = SearchValues.Create("#O"u8);
-    private readonly Span<byte> _bytes;
-    private readonly Span<byte[]> _columnBytes;
-    private readonly ReadOnlySpan<Range> _lineRanges;
 
-    public Map(Span<byte> bytes, ReadOnlySpan<Range> lineRanges)
-    {
-        _bytes = bytes;
-        _lineRanges = lineRanges;
-        Height = lineRanges.Length;
-        Width = bytes[lineRanges[0]].Length;
+    // copy source array to avoid mutating shared data
+    private readonly byte[] _rowOrder = mapData.RowOrder.ToArray();
 
-        _columnBytes = new byte[Width][];
-        for (var i = 0; i < _columnBytes.Length; i++)
-        {
-            Span<byte> column = _columnBytes[i] = new byte[Height];
-            for (var j = 0; j < column.Length; j++)
-                column[j] = bytes[lineRanges[j]][i];
-        }
-    }
+    public int Height { get; } = mapData.Height;
+    public int Width { get; } = mapData.Width;
 
-    public int Height { get; }
-    public int Width { get; }
-
+    // optimization of x >= 0 && x < width && y >= 0 && y < height
     public readonly bool IsInBounds(int x, int y)
-        => x >= 0 && x < Width && y >= 0 && y < Height;
+        => (uint)x < (uint)Width && (uint)y < (uint)Height;
 
     public void MarkPath(int x, int y)
         => Set(x, y, Visited);
 
     public byte Set(int x, int y, byte value)
     {
-        var row = _bytes[_lineRanges[y]];
-        var previous = row[x];
-        row[x] = value;
-        _columnBytes[x][y] = value;
+        var rowIndex = GetRowIndex(x, y);
+        var previous = _rowOrder[rowIndex];
+        _rowOrder[rowIndex] = value;
         return previous;
     }
 
@@ -213,27 +256,14 @@ ref struct Map
         return false;
     }
 
-    public bool TryAddObstruction2(int x, int y, out byte previous)
-    {
-        // it's only relevant to add new obstructions to previously visited positions
-        if (TryGet(x, y, out _)) // when parallelizing, board state is stale so we don't have all visited positions
-        {
-            previous = Set(x, y, NewObstruction);
-            return true;
-        }
-
-        previous = default;
-        return false;
-    }
-
     public readonly bool TryGet(int x, int y, out byte result)
     {
         result = default;
         if (!IsInBounds(x, y))
             return false;
 
-        var line = _bytes[_lineRanges[y]];
-        result = line[x];
+        var rowIndex = GetRowIndex(x, y);
+        result = _rowOrder[rowIndex];
         return true;
     }
 
@@ -266,58 +296,8 @@ ref struct Map
         return true;
     }
 
-    // this can be used when we don't need to mark the path
-    public readonly bool TryMoveFast(ref Guard guard)
-    {
-        Span<byte> column;
-        Span<byte> row;
-        int index;
-        switch (guard.Direction)
-        {
-            case Direction.Up:
-                column = _columnBytes[guard.X];
-                index = column[..guard.Y].LastIndexOfAny(ObstacleSearchValues);
-                if (index == -1)
-                    return false;
-
-                guard.Direction = Direction.Right;
-                guard.Y = (short)(index + 1);
-                return true;
-
-            case Direction.Down:
-                column = _columnBytes[guard.X];
-                index = column[guard.Y..].IndexOfAny(ObstacleSearchValues);
-                if (index == -1)
-                    return false;
-
-                guard.Direction = Direction.Left;
-                guard.Y += (short)(index - 1);
-                return true;
-
-            case Direction.Left:
-                row = _bytes[_lineRanges[guard.Y]];
-                index = row[..guard.X].LastIndexOfAny(ObstacleSearchValues);
-                if (index == -1)
-                    return false;
-
-                guard.Direction = Direction.Up;
-                guard.X = (short)(index + 1);
-                return true;
-
-            case Direction.Right:
-                row = _bytes[_lineRanges[guard.Y]];
-                index = row[guard.X..].IndexOfAny(ObstacleSearchValues);
-                if (index == -1)
-                    return false;
-
-                guard.Direction = Direction.Down;
-                guard.X += (short)(index - 1);
-                return true;
-
-            default:
-                throw new InvalidOperationException();
-        }
-    }
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private readonly int GetRowIndex(int x, int y) => y * Width + x;
 
     public static Direction TurnRight(Direction direction)
         => direction switch
@@ -330,8 +310,132 @@ ref struct Map
         };
 }
 
+struct ReadOnlyMap(MapData mapData)
+{
+    const byte Obstruction = Map.Obstruction;
+    private readonly byte[] _columnOrder = mapData.ColumnOrder;
+    private readonly byte[] _rowOrder = mapData.RowOrder;
+
+    public int Height { get; } = mapData.Height;
+    public int Width { get; } = mapData.Width;
+
+    // this can be used when we don't need to mark the path
+    public readonly bool TryMoveFast(ref Guard guard, in Position altObstruction)
+    {
+        int index, altIndex;
+        switch (guard.Direction)
+        {
+            case Direction.Up:
+                index = GetColumnEndAtSpan(guard.X, guard.Y).LastIndexOf(Obstruction);
+                altIndex = guard.X == altObstruction.X && guard.Y > altObstruction.Y
+                    ? altObstruction.Y
+                    : -1;
+
+                return TryMoveUp(index, altIndex, ref guard);
+
+            case Direction.Down:
+                index = GetColumnStartAtSpan(guard.X, guard.Y).IndexOf(Obstruction);
+                altIndex = guard.X == altObstruction.X && guard.Y < altObstruction.Y
+                    ? altObstruction.Y
+                    : -1;
+
+                return TryMoveDown(index, altIndex, ref guard);
+
+            case Direction.Left:
+                index = GetRowEndAtSpan(guard.X, guard.Y).LastIndexOf(Obstruction);
+                altIndex = guard.Y == altObstruction.Y && guard.X > altObstruction.X
+                    ? altObstruction.X
+                    : -1;
+
+                return TryMoveLeft(index, altIndex, ref guard);
+
+            case Direction.Right:
+                index = GetRowStartAtSpan(guard.X, guard.Y).IndexOf(Obstruction);
+                altIndex = guard.Y == altObstruction.Y && guard.X < altObstruction.X
+                    ? altObstruction.X
+                    : -1;
+
+                return TryMoveRight(index, altIndex, ref guard);
+
+            default:
+                throw new InvalidOperationException();
+        }
+    }
+
+    private static bool TryMoveUp(int obstructionIndex, int altIndex, ref Guard guard)
+    {
+        var index = Math.Max(obstructionIndex, altIndex);
+        if (index == -1)
+            return false;
+
+        guard.Direction = Direction.Right;
+        guard.Y = (short)(index + 1);
+        return true;
+    }
+
+    private static bool TryMoveDown(int obstructionIndex, int altIndex, ref Guard guard)
+    {
+        var index = (obstructionIndex, altIndex) switch
+        {
+            (-1, _) => altIndex,
+            (_, -1) => guard.Y + obstructionIndex,
+            (_, _) => Math.Min(guard.Y + obstructionIndex, altIndex)
+        };
+        if (index == -1)
+            return false;
+
+        guard.Direction = Direction.Left;
+        guard.Y = (short)(index - 1);
+        return true;
+    }
+
+    private static bool TryMoveLeft(int obstructionIndex, int altIndex, ref Guard guard)
+    {
+        var index = Math.Max(obstructionIndex, altIndex);
+        if (index == -1)
+            return false;
+
+        guard.Direction = Direction.Up;
+        guard.X = (short)(index + 1);
+        return true;
+    }
+
+    private static bool TryMoveRight(int obstructionIndex, int altIndex, ref Guard guard)
+    {
+        var index = (obstructionIndex, altIndex) switch
+        {
+            (-1, _) => altIndex,
+            (_, -1) => guard.X + obstructionIndex,
+            (_, _) => Math.Min(guard.X + obstructionIndex, altIndex)
+        };
+        if (index == -1)
+            return false;
+
+        guard.Direction = Direction.Down;
+        guard.X = (short)(index - 1);
+        return true;
+    }
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private readonly ReadOnlySpan<byte> GetColumnEndAtSpan(int x, int y)
+        => _columnOrder.AsSpan(x * Height, y);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private readonly ReadOnlySpan<byte> GetColumnStartAtSpan(int x, int y)
+        => _columnOrder.AsSpan(x * Height + y, Height - y);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private readonly ReadOnlySpan<byte> GetRowEndAtSpan(int x, int y)
+        => _rowOrder.AsSpan(y * Width, x);
+
+    [MethodImpl(MethodImplOptions.AggressiveInlining)]
+    private readonly ReadOnlySpan<byte> GetRowStartAtSpan(int x, int y)
+        => _rowOrder.AsSpan(y * Width + x, Width - x);
+}
+
 enum Direction : byte
 {
+    None,
     Up,
     Down,
     Left,
