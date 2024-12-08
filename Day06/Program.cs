@@ -64,7 +64,7 @@ var elapsed = TimeProvider.System.GetElapsedTime(start);
 
 Console.WriteLine($"Part 1 answer: {total1}");
 Console.WriteLine($"Part 2 answer: {executor2.Total}");
-Console.WriteLine($"Part 2 attempted moves: {executor2.AttemptedMoves:N0}, turns: {executor2.AttemptedTurns:N0}");
+//Console.WriteLine($"Part 2 attempted moves: {executor2.AttemptedMoves:N0}, turns: {executor2.AttemptedTurns:N0}");
 Console.WriteLine($"Part 1 elapsed: {elapsed1.TotalMilliseconds:N3} ms");
 Console.WriteLine($"Processed {bytes.Length:N0} bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
@@ -103,8 +103,8 @@ class ExecutorPart2(MapData mapData, BlockingCollection<GuardMovement> guardMove
             }
         }
 
-        Interlocked.Add(ref _attemptedMoves, attemptedMoves);
-        Interlocked.Add(ref _attemptedTurns, attemptedTurns);
+        //Interlocked.Add(ref _attemptedMoves, attemptedMoves);
+        //Interlocked.Add(ref _attemptedTurns, attemptedTurns);
         Interlocked.Add(ref _total, total);
     }
 
@@ -121,21 +121,21 @@ class ExecutorPart2(MapData mapData, BlockingCollection<GuardMovement> guardMove
         //builder.AppendLine($"Guard position: {guard.X}, {guard.Y}, {guard.Direction}");
 
         var isLoop = false;
-        var lastDirection = guard.Direction;
-        var numTurns = 0;
+        //var lastDirection = guard.Direction;
+        //var numTurns = 0;
         while (map.TryMoveFast(ref guard, in newObstruction))
         {
-            Debug.Assert(guard.X >= 0 && guard.Y >= 0);
-            attemptedMoves++;
+            //Debug.Assert(guard.X >= 0 && guard.Y >= 0);
+            //attemptedMoves++;
 
             //builder.AppendLine($"- Moved to {guard.X}, {guard.Y}");
-            if (guard.Direction != lastDirection)
-            {
-                //builder.AppendLine($"- Turned at {guard.X}, {guard.Y}, {guard.Direction} (turn # {numTurns + 1})");
-                lastDirection = guard.Direction;
-                attemptedTurns++;
-                numTurns++;
-            }
+            //if (guard.Direction != lastDirection)
+            //{
+            //    //builder.AppendLine($"- Turned at {guard.X}, {guard.Y}, {guard.Direction} (turn # {numTurns + 1})");
+            //    lastDirection = guard.Direction;
+            //    attemptedTurns++;
+            //    numTurns++;
+            //}
 
             if (!loopHash.Add(guard))
             {
