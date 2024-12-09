@@ -138,6 +138,7 @@ static void MoveFile(Span<short> disk, int fileStart, int fileLength, int freeSt
 
 static bool TryGetFileBlock(ReadOnlySpan<short> disk, int end, out int fileStart, out int fileLength)
 {
+    const int maxLength = 9;
     var id = disk[end];
     if (IsFree(id))
     {
@@ -146,7 +147,8 @@ static bool TryGetFileBlock(ReadOnlySpan<short> disk, int end, out int fileStart
         return false;
     }
 
-    fileStart = disk[..(end + 1)].IndexOf(id);
+    var start = Math.Max(0, end - maxLength);
+    fileStart = start + disk[start..(end + 1)].IndexOf(id);
     fileLength = end - fileStart + 1;
     return true;
 }
@@ -175,7 +177,7 @@ static bool TryGetNextFreeBlock(ReadOnlySpan<short> disk, int start, int end, ou
         return false;
 
     freeLength = 1;
-    freeStart = start + freeStart;
+    freeStart += start;
     for (var i = freeStart + 1; i < end; i++)
     {
         var id = disk[i];
