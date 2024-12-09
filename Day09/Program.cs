@@ -123,6 +123,15 @@ static void CompactFilesNonFragmenting(Span<short> disk)
     }
 }
 
+static void FormatDisk(StringBuilder builder, ReadOnlySpan<short> disk)
+{
+    for (var i = 0; i < disk.Length; i++)
+    {
+        var item = disk[i];
+        builder.Append(item >= 0 ? (char)((item % 10) + (byte)'0') : '.');
+    }
+}
+
 static byte GetMapValue(byte utf8Byte) => (byte)(utf8Byte - (byte)'0');
 
 static bool IsFree(short block) => block == Free;
