@@ -14,9 +14,11 @@ var bytes = useExample switch
     _ => File.ReadAllBytes("input.txt").AsSpan()
 };
 
+const short Free = -1;
+
 var diskMap = bytes;
 
-using var disk = new PoolableList<short?>(bytes.Length * 4);
+using var disk = new PoolableList<short>(bytes.Length * 4);
 for (int i = 0, id = 0; i < diskMap.Length; i += 2, id++)
 {
     // file
@@ -29,7 +31,7 @@ for (int i = 0, id = 0; i < diskMap.Length; i += 2, id++)
     {
         var freeLength = GetMapValue(diskMap[i + 1]);
         for (var j = 0; j < freeLength; j++)
-            disk.Add(null);
+            disk.Add(Free);
     }
 }
 
@@ -47,22 +49,22 @@ Console.WriteLine($"Part 1 checksum: {checksum1}");
 Console.WriteLine($"Part 2 checksum: {checksum2}");
 Console.WriteLine($"Processed {bytes.Length:N0} bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
-static long CalculateChecksum(Span<short?> disk)
+static long CalculateChecksum(Span<short> disk)
 {
     var checksum = 0L;
     for (var i = 0; i < disk.Length; i++)
     {
         var id = disk[i];
-        if (!id.HasValue)
+        if (IsFree(id))
             continue;
 
-        checksum += i * id.Value;
+        checksum += i * id;
     }
 
     return checksum;
 }
 
-static int CompactFilesFragmenting(Span<short?> disk)
+static int CompactFilesFragmenting(Span<short> disk)
 {
     var builder = new StringBuilder(disk.Length);
     var i = 0;
@@ -83,7 +85,7 @@ static int CompactFilesFragmenting(Span<short?> disk)
         }
 
         disk[i++] = fileId;
-        disk[j--] = null;
+        disk[j--] = Free;
 
         //FormatDisk(builder, disk);
         //Console.WriteLine(builder);
@@ -93,7 +95,7 @@ static int CompactFilesFragmenting(Span<short?> disk)
     return j + 1;
 }
 
-static void CompactFilesNonFragmenting(Span<short?> disk)
+static void CompactFilesNonFragmenting(Span<short> disk)
 {
     var builder = new StringBuilder(disk.Length);
     var i = 0;
@@ -103,15 +105,12 @@ static void CompactFilesNonFragmenting(Span<short?> disk)
         if (!TryGetNextFreeBlock(disk, i, j, out i, out _))
             break;
 
-        var fileId = disk[j];
-        if (IsFree(fileId))
+        if (!TryGetFileBlock(disk, j, out var fileStart, out var fileLength))
         {
             j--;
             continue;
         }
 
-        var fileLength = GetFileLength(disk, j);
-        var fileStart = j - fileLength + 1;
         j = fileStart - 1;
         if (TryGetFreeBlock(disk, i, fileStart, fileLength, out var freeStart, out _))
             MoveFile(disk, fileStart, fileLength, freeStart);
@@ -124,39 +123,36 @@ static void CompactFilesNonFragmenting(Span<short?> disk)
     }
 }
 
-static int GetFileLength(ReadOnlySpan<short?> disk, int end)
-{
-    var id = disk[end];
-    if (IsFree(id))
-        return 0;
-
-    var length = 1;
-    for (var i = end - 1; i >= 0; i--)
-    {
-        if (disk[i] != id)
-            break;
-
-        length++;
-    }
-
-    return length;
-}
-
 static byte GetMapValue(byte utf8Byte) => (byte)(utf8Byte - (byte)'0');
 
-static bool IsFree(short? block) => !block.HasValue;
+static bool IsFree(short block) => block == Free;
 
-static void MoveFile(Span<short?> disk, int fileStart, int fileLength, int freeStart)
+static void MoveFile(Span<short> disk, int fileStart, int fileLength, int freeStart)
 {
     var originalFile = disk.Slice(fileStart, fileLength);
     originalFile.CopyTo(disk[freeStart..]);
 
     for (var i = 0; i < fileLength; i++)
-        originalFile[i] = null;
+        originalFile[i] = Free;
+}
+
+static bool TryGetFileBlock(ReadOnlySpan<short> disk, int end, out int fileStart, out int fileLength)
+{
+    var id = disk[end];
+    if (IsFree(id))
+    {
+        fileStart = -1;
+        fileLength = 0;
+        return false;
+    }
+
+    fileStart = disk[..(end + 1)].IndexOf(id);
+    fileLength = end - fileStart + 1;
+    return true;
 }
 
 static bool TryGetFreeBlock(
-    ReadOnlySpan<short?> disk, int start, int end, int minSize, out int freeStart, out int freeLength)
+    ReadOnlySpan<short> disk, int start, int end, int minSize, out int freeStart, out int freeLength)
 {
     while (TryGetNextFreeBlock(disk, start, end, out freeStart, out freeLength))
     {
@@ -171,20 +167,23 @@ static bool TryGetFreeBlock(
     return false;
 }
 
-static bool TryGetNextFreeBlock(ReadOnlySpan<short?> disk, int start, int end, out int freeStart, out int freeLength)
+static bool TryGetNextFreeBlock(ReadOnlySpan<short> disk, int start, int end, out int freeStart, out int freeLength)
 {
-    freeStart = -1;
     freeLength = 0;
-    for (var i = start; i < end; i++)
+    freeStart = disk[start..end].IndexOf(Free);
+    if (freeStart == -1)
+        return false;
+
+    freeLength = 1;
+    freeStart = start + freeStart;
+    for (var i = freeStart + 1; i < end; i++)
     {
         var id = disk[i];
-        if (freeStart == -1 && IsFree(id))
-            freeStart = i;
         if (IsFree(id))
             freeLength++;
-        else if (freeStart != -1)
+        else
             break;
     }
 
-    return freeStart != -1;
+    return true;
 }
