@@ -65,16 +65,19 @@ var mapData = MapData.FromInput(bytes, out var trailheadCollection, out var numP
 
 var reachablePeaks = new HashSet<Position>(numPeaks);
 var total1 = 0;
+var total2 = 0;
 var trailheads = trailheadCollection.Span;
 foreach (var trailhead in trailheads)
 {
     total1 += GetTrailScore(mapData, in trailhead, reachablePeaks);
+    total2 += GetTrailRating(mapData, in trailhead);
     reachablePeaks.Clear();
 }
 
 var elapsed = TimeProvider.System.GetElapsedTime(start);
 
 Console.WriteLine($"Part 1 answer: {total1}");
+Console.WriteLine($"Part 2 answer: {total2}");
 Console.WriteLine($"Processed {bytes.Length:N0} bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
 static int GetTrailScore(MapData mapData, in TopoPosition position, HashSet<Position> reachablePeaks)
@@ -100,6 +103,33 @@ static int GetTrailScore(MapData mapData, in TopoPosition position, HashSet<Posi
     var west = position.X - 1;
     if (mapData.TryGetElevation(west, position.Y, out checkElevation) && checkElevation == nextElevation)
         score += GetTrailScore(mapData, new TopoPosition((sbyte)west, position.Y, nextElevation), reachablePeaks);
+
+    return score;
+}
+
+static int GetTrailRating(MapData mapData, in TopoPosition position)
+{
+    if (position.Elevation == MapData.Peak)
+        return 1;
+
+    var score = 0;
+    var nextElevation = (byte)(position.Elevation + 1);
+
+    var north = position.Y - 1;
+    if (mapData.TryGetElevation(position.X, north, out var checkElevation) && checkElevation == nextElevation)
+        score += GetTrailRating(mapData, new TopoPosition(position.X, (sbyte)north, nextElevation));
+
+    var south = position.Y + 1;
+    if (mapData.TryGetElevation(position.X, south, out checkElevation) && checkElevation == nextElevation)
+        score += GetTrailRating(mapData, new TopoPosition(position.X, (sbyte)south, nextElevation));
+
+    var east = position.X + 1;
+    if (mapData.TryGetElevation(east, position.Y, out checkElevation) && checkElevation == nextElevation)
+        score += GetTrailRating(mapData, new TopoPosition((sbyte)east, position.Y, nextElevation));
+
+    var west = position.X - 1;
+    if (mapData.TryGetElevation(west, position.Y, out checkElevation) && checkElevation == nextElevation)
+        score += GetTrailRating(mapData, new TopoPosition((sbyte)west, position.Y, nextElevation));
 
     return score;
 }
