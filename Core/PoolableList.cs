@@ -29,9 +29,20 @@ public sealed class PoolableList<T>(int minimumLength = PoolableList<T>.MinLengt
 
     public Span<T> Span => _buffer.AsSpan(0, _length);
 
+    /// <summary>
+    /// Resets length and clears values
+    /// </summary>
     public void Clear()
     {
         _buffer.AsSpan().Clear();
+        _length = 0;
+    }
+
+    /// <summary>
+    /// Resets length without clearing values
+    /// </summary>
+    public void Reset()
+    {
         _length = 0;
     }
 
