@@ -27,32 +27,16 @@ foreach (var stoneRange in MemoryExtensions.Split(bytes, (byte)' '))
     }
 }
 
-//var stringBuilder = new StringBuilder();
-//Format(stringBuilder, stones);
-//Console.WriteLine(stringBuilder);
 var numStones1 = 0L;
 foreach (var stone in stones.Span)
-    numStones1 += CountStones(in stone, numBlinks1);
+    numStones1 += InfiniteCorridors.CountStones(in stone, numBlinks1);
 
 var numStones2 = 0L;
 foreach (var stone in stones.Span)
 {
     var stoneStart = TimeProvider.System.GetTimestamp();
-    numStones2 += CountStones(in stone, numBlinks2);
-    Console.WriteLine($"Starting stone: {stone.Number}, Stones: {numStones2:N0}, Elapsed: {TimeProvider.System.GetElapsedTime(stoneStart)}");
+    numStones2 += InfiniteCorridors.CountStones(in stone, numBlinks2);
 }
-
-//for (var blink = 1; blink <= 6; blink++)
-//{
-//    var blinkStart = TimeProvider.System.GetTimestamp();
-//    var stonesByBlink = 0;
-//    foreach (var stone in stones.Span)
-//    {
-//        stonesByBlink += CountStones(in stone, blink);
-//    }
-
-//    Console.WriteLine($"Blink: {blink}, Stones: {stonesByBlink:N0}, Elapsed: {TimeProvider.System.GetElapsedTime(blinkStart)}");
-//}
 
 var elapsed = TimeProvider.System.GetElapsedTime(start);
 
@@ -60,28 +44,49 @@ Console.WriteLine($"Part 1: Number of stones: {numStones1} for {numBlinks1} blin
 Console.WriteLine($"Part 2: Number of stones: {numStones2} for {numBlinks2} blinks");
 Console.WriteLine($"Processed {bytes.Length:N0} input bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
-static int CountStones(in Stone stone, int numBlinks)
+static class InfiniteCorridors
 {
-    if (numBlinks == 0)
-        return 1;
+    private static readonly Dictionary<StoneBlinks, long> Memoized = [];
 
-    var count = 0;
-    if (stone.Number == 0)
+    public static long CountStones(in Stone stone, int numBlinks)
     {
-        count += CountStones(new(1, 1), numBlinks - 1);
-    }
-    else if (stone.Digits.IsEven())
-    {
-        stone.Split(out var left, out var right);
-        count += CountStones(in left, numBlinks - 1);
-        count += CountStones(in right, numBlinks - 1);
-    }
-    else
-    {
-        count += CountStones(stone.Multiply2024(), numBlinks - 1);
+        if (numBlinks == 0)
+            return 1;
+
+        var nextBlinks = numBlinks - 1;
+        var subTotal = 0L;
+        if (stone.Number == 0)
+        {
+            var one = new Stone(1, 1);
+            subTotal += CountStonesMemoized(in one, nextBlinks);
+        }
+        else if (stone.Digits.IsEven())
+        {
+            stone.Split(out var left, out var right);
+            subTotal += CountStonesMemoized(in left, nextBlinks);
+            subTotal += CountStonesMemoized(in right, nextBlinks);
+        }
+        else
+        {
+            subTotal += CountStonesMemoized(stone.Multiply2024(), nextBlinks);
+        }
+
+        return subTotal;
     }
 
-    return count;
+    private static long CountStonesMemoized(in Stone stone, int numBlinks)
+    {
+        var key = new StoneBlinks(stone.Number, numBlinks);
+        if (!Memoized.TryGetValue(key, out var count))
+        {
+            count = CountStones(in stone, numBlinks);
+            Memoized.Add(key, count);
+        }
+
+        return count;
+    }
+
+    private record struct StoneBlinks(long Number, int Blinks);
 }
 
 record struct Stone(long Number, int Digits)
