@@ -1,5 +1,6 @@
 ﻿using System.Buffers.Text;
 using System.Text;
+using Core;
 
 var start = TimeProvider.System.GetTimestamp();
 
@@ -16,14 +17,14 @@ var bytes = useExample switch
     _ => File.ReadAllBytes("input.txt")
 };
 
-var stones = new LinkedList<Stone>();
+var stones = new PoolableList<Stone>();
 foreach (var stoneRange in MemoryExtensions.Split(bytes, (byte)' '))
 {
     var stoneSpan = bytes.AsSpan(stoneRange);
     if (Utf8Parser.TryParse(stoneSpan, out int number, out int length))
     {
         var stone = new Stone(number, length);
-        stones.AddLast(stone);
+        stones.Add(stone);
     }
 }
 
@@ -32,31 +33,33 @@ foreach (var stoneRange in MemoryExtensions.Split(bytes, (byte)' '))
 //Console.WriteLine(stringBuilder);
 var numStones1 = 0;
 var numStones2 = 0;
+var nextStones = new PoolableList<Stone>();
 for (var blink = 1; blink <= Math.Max(numBlinks1, numBlinks2); blink++)
 {
     var blinkStart = TimeProvider.System.GetTimestamp();
-    var node = stones.First;
-    while (node != null)
+    nextStones.Reset();
+    var stonesSpan = stones.Span;
+    foreach (var stone in stonesSpan)
     {
-        if (node.Value.Number == 0)
+        if (stone.Number == 0)
         {
-            node.ValueRef.Number = 1;
+            nextStones.Add(new(1, 1));
         }
-        else if (node.Value.Digits.IsEven())
+        else if (stone.Digits.IsEven())
         {
-            node.Value.Split(out var left, out var right);
-            stones.AddBefore(node, left);
-            node.ValueRef = right;
+            stone.Split(out var left, out var right);
+            nextStones.Add(left);
+            nextStones.Add(right);
         }
         else
         {
-            node.ValueRef = node.Value.Multiply2024();
+            nextStones.Add(stone.Multiply2024());
         }
-
-        node = node.Next;
     }
 
-    var numStones = stones.Count;
+    (nextStones, stones) = (stones, nextStones);
+
+    var numStones = stones.Length;
     Console.WriteLine($"Blink: {blink}, Stones: {numStones:N0}, Elapsed: {TimeProvider.System.GetElapsedTime(blinkStart)}");
 
     if (blink == numBlinks1)
@@ -67,6 +70,7 @@ for (var blink = 1; blink <= Math.Max(numBlinks1, numBlinks2); blink++)
 
     //Format(stringBuilder, stones);
     //Console.WriteLine(stringBuilder);
+
 }
 
 var elapsed = TimeProvider.System.GetElapsedTime(start);
