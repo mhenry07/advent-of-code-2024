@@ -3,7 +3,8 @@ using System.Text;
 
 var start = TimeProvider.System.GetTimestamp();
 
-const int numBlinks = 25;
+const int numBlinks1 = 25;
+const int numBlinks2 = 75;
 int? useExample = null;
 var exampleBytes1 = "0 1 10 99 999"u8.ToArray();
 var exampleBytes2 = "125 17"u8.ToArray();
@@ -29,8 +30,11 @@ foreach (var stoneRange in MemoryExtensions.Split(bytes, (byte)' '))
 //var stringBuilder = new StringBuilder();
 //Format(stringBuilder, stones);
 //Console.WriteLine(stringBuilder);
-for (var blink = 0; blink < numBlinks; blink++)
+var numStones1 = 0;
+var numStones2 = 0;
+for (var blink = 1; blink <= Math.Max(numBlinks1, numBlinks2); blink++)
 {
+    var blinkStart = TimeProvider.System.GetTimestamp();
     var node = stones.First;
     while (node != null)
     {
@@ -52,15 +56,23 @@ for (var blink = 0; blink < numBlinks; blink++)
         node = node.Next;
     }
 
+    var numStones = stones.Count;
+    Console.WriteLine($"Blink: {blink}, Stones: {numStones:N0}, Elapsed: {TimeProvider.System.GetElapsedTime(blinkStart)}");
+
+    if (blink == numBlinks1)
+        numStones1 = numStones;
+
+    if (blink == numBlinks2)
+        numStones2 = numStones;
+
     //Format(stringBuilder, stones);
     //Console.WriteLine(stringBuilder);
 }
 
-var numStones = stones.Count;
-
 var elapsed = TimeProvider.System.GetElapsedTime(start);
 
-Console.WriteLine($"Part 1: Number of stones: {numStones}");
+Console.WriteLine($"Part 1: Number of stones: {numStones1}");
+Console.WriteLine($"Part 2: Number of stones: {numStones2}");
 Console.WriteLine($"Processed {bytes.Length:N0} bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
 static void Format(StringBuilder builder, LinkedList<Stone> stones)
