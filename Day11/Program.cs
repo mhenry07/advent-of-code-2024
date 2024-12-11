@@ -1,5 +1,4 @@
 ﻿using System.Buffers.Text;
-using System.Text;
 using Core;
 
 var start = TimeProvider.System.GetTimestamp();
@@ -31,77 +30,58 @@ foreach (var stoneRange in MemoryExtensions.Split(bytes, (byte)' '))
 //var stringBuilder = new StringBuilder();
 //Format(stringBuilder, stones);
 //Console.WriteLine(stringBuilder);
-var numStones1 = 0;
-var numStones2 = 0;
-var nextStones = new PoolableList<Stone>();
-for (var blink = 1; blink <= Math.Max(numBlinks1, numBlinks2); blink++)
+var numStones1 = 0L;
+foreach (var stone in stones.Span)
+    numStones1 += CountStones(in stone, numBlinks1);
+
+var numStones2 = 0L;
+foreach (var stone in stones.Span)
 {
-    var blinkStart = TimeProvider.System.GetTimestamp();
-    nextStones.Reset();
-    var stonesSpan = stones.Span;
-    foreach (var stone in stonesSpan)
-    {
-        if (stone.Number == 0)
-        {
-            nextStones.Add(new(1, 1));
-        }
-        else if (stone.Digits.IsEven())
-        {
-            stone.Split(out var left, out var right);
-            nextStones.Add(left);
-            nextStones.Add(right);
-        }
-        else
-        {
-            nextStones.Add(stone.Multiply2024());
-        }
-    }
-
-    (nextStones, stones) = (stones, nextStones);
-
-    var numStones = stones.Length;
-    Console.WriteLine($"Blink: {blink}, Stones: {numStones:N0}, Elapsed: {TimeProvider.System.GetElapsedTime(blinkStart)}");
-
-    if (blink == numBlinks1)
-        numStones1 = numStones;
-
-    if (blink == numBlinks2)
-        numStones2 = numStones;
-
-    //Format(stringBuilder, stones);
-    //Console.WriteLine(stringBuilder);
-
+    var stoneStart = TimeProvider.System.GetTimestamp();
+    numStones2 += CountStones(in stone, numBlinks2);
+    Console.WriteLine($"Starting stone: {stone.Number}, Stones: {numStones2:N0}, Elapsed: {TimeProvider.System.GetElapsedTime(stoneStart)}");
 }
+
+//for (var blink = 1; blink <= 6; blink++)
+//{
+//    var blinkStart = TimeProvider.System.GetTimestamp();
+//    var stonesByBlink = 0;
+//    foreach (var stone in stones.Span)
+//    {
+//        stonesByBlink += CountStones(in stone, blink);
+//    }
+
+//    Console.WriteLine($"Blink: {blink}, Stones: {stonesByBlink:N0}, Elapsed: {TimeProvider.System.GetElapsedTime(blinkStart)}");
+//}
 
 var elapsed = TimeProvider.System.GetElapsedTime(start);
 
-Console.WriteLine($"Part 1: Number of stones: {numStones1}");
-Console.WriteLine($"Part 2: Number of stones: {numStones2}");
-Console.WriteLine($"Processed {bytes.Length:N0} bytes in: {elapsed.TotalMilliseconds:N3} ms");
+Console.WriteLine($"Part 1: Number of stones: {numStones1} for {numBlinks1} blinks");
+Console.WriteLine($"Part 2: Number of stones: {numStones2} for {numBlinks2} blinks");
+Console.WriteLine($"Processed {bytes.Length:N0} input bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
-static void Format(StringBuilder builder, LinkedList<Stone> stones)
+static int CountStones(in Stone stone, int numBlinks)
 {
-    builder.Clear();
-    var i = 0;
-    foreach (var stone in stones)
+    if (numBlinks == 0)
+        return 1;
+
+    var count = 0;
+    if (stone.Number == 0)
     {
-        if (i > 0)
-            builder.Append(' ');
-
-        if (builder.Length >= 60)
-        {
-            builder.Append("...");
-            break;
-        }
-
-        builder.Append(stone.Number);
-
-        i++;
+        count += CountStones(new(1, 1), numBlinks - 1);
+    }
+    else if (stone.Digits.IsEven())
+    {
+        stone.Split(out var left, out var right);
+        count += CountStones(in left, numBlinks - 1);
+        count += CountStones(in right, numBlinks - 1);
+    }
+    else
+    {
+        count += CountStones(stone.Multiply2024(), numBlinks - 1);
     }
 
-    builder.Append("   <== ");
-    builder.Append(stones.Count);
-    builder.Append(" stones");
+    return count;
 }
 
 record struct Stone(long Number, int Digits)
