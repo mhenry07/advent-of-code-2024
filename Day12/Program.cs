@@ -1,6 +1,6 @@
 ﻿var start = TimeProvider.System.GetTimestamp();
 
-int? useExample = 3;
+int? useExample = null;
 var exampleBytes1 = """
 AAAA
 BBCD
@@ -57,155 +57,77 @@ class Farm(MapData mapData)
 
     public long CalculateTotalFencePrice()
     {
-        var index = 0;
         var totalPrice = 0L;
-        var rowOrder = MapData.RowOrder.AsSpan();
-        var plotPositions = PlotPositions.AsSpan();
+        var plants = new RowOrderSpan<byte>(MapData.RowOrder.AsSpan(), Width, Height);
+        var plotPositions = new RowOrderSpan<PlotPosition>(PlotPositions.AsSpan(), Width, Height);
+        var regionId = 1;
         for (var y = 0; y < Height; y++)
         {
             for (var x = 0; x < Width; x++)
             {
-                if (plotPositions[index].RegionId == 0)
-                    totalPrice += CalculateFencePrice(rowOrder, plotPositions, index + 1, x, y);
+                if (plotPositions.Get(x, y).RegionId == 0)
+                {
+                    var area = 0;
+                    var perimiter = 0;
+                    CalculateFenceDimensions(plants, plotPositions, regionId, x, y, ref area, ref perimiter);
+                    totalPrice += area * perimiter;
+                }
 
-                index++;
+                regionId++;
             }
         }
 
         return totalPrice;
     }
 
-    int CalculateFencePrice(ReadOnlySpan<byte> rowOrder, Span<PlotPosition> plotPositions, int regionId, int x, int y)
+    void CalculateFenceDimensions(
+        RowOrderSpan<byte> plants, RowOrderSpan<PlotPosition> plotPositions, int regionId, int x, int y, ref int area, ref int perimiter)
     {
-        var area = 1;
-        var direction = Direction.Right;
-        var position = new Position((byte)x, (byte)y);
-        var index = GetIndex(x, y);
-        var plant = rowOrder[index];
-        var perimiter = GetPlotPerimiter(rowOrder, plant, x, y);
-        plotPositions[index] = new PlotPosition(plant, regionId, (byte)x, (byte)y);
-        while (TryMoveLeftHandRule(rowOrder, plotPositions, plant, ref direction, ref position))
-        {
-            index = GetIndex(position.X, position.Y);
-            plotPositions[index] = new PlotPosition(plant, regionId, position.X, position.Y);
-            area++;
-            perimiter += GetPlotPerimiter(rowOrder, plant, position.X, position.Y);
-        }
+        area++;
+        var plant = plants.Get(x, y);
+        plotPositions.GetRef(x, y) = new PlotPosition(plant, regionId, (byte)x, (byte)y);
 
-        return area * perimiter;
+        GetNeighbor(plants, plotPositions, x - 1, y, out var neighbor);
+        if (neighbor.IsPerimiter(plant))
+            perimiter++;
+        if (neighbor.ShouldVisit(plant))
+            CalculateFenceDimensions(plants, plotPositions, regionId, neighbor.X, neighbor.Y, ref area, ref perimiter);
+
+        GetNeighbor(plants, plotPositions, x + 1, y, out neighbor);
+        if (neighbor.IsPerimiter(plant))
+            perimiter++;
+        if (neighbor.ShouldVisit(plant))
+            CalculateFenceDimensions(plants, plotPositions, regionId, neighbor.X, neighbor.Y, ref area, ref perimiter);
+
+        GetNeighbor(plants, plotPositions, x, y - 1, out neighbor);
+        if (neighbor.IsPerimiter(plant))
+            perimiter++;
+        if (neighbor.ShouldVisit(plant))
+            CalculateFenceDimensions(plants, plotPositions, regionId, neighbor.X, neighbor.Y, ref area, ref perimiter);
+
+        GetNeighbor(plants, plotPositions, x, y + 1, out neighbor);
+        if (neighbor.IsPerimiter(plant))
+            perimiter++;
+        if (neighbor.ShouldVisit(plant))
+            CalculateFenceDimensions(plants, plotPositions, regionId, neighbor.X, neighbor.Y, ref area, ref perimiter);
     }
 
-    int GetPlotPerimiter(ReadOnlySpan<byte> rowOrder, byte plant, int x, int y)
+    void GetNeighbor(
+        RowOrderSpan<byte> plants, RowOrderSpan<PlotPosition> plotPositions, int x, int y, out Neighbor neighbor)
     {
-        var perimiter = 0;
-        perimiter += GetPerimiter(rowOrder, plant, x - 1, y, perimiter);
-        perimiter += GetPerimiter(rowOrder, plant, x + 1, y, perimiter);
-        perimiter += GetPerimiter(rowOrder, plant, x, y - 1, perimiter);
-        perimiter += GetPerimiter(rowOrder, plant, x, y + 1, perimiter);
-
-        return perimiter;
-
-        int GetPerimiter(ReadOnlySpan<byte> rowOrder, byte plant, int x1, int y1, int perimiter)
-        {
-            return !IsInBounds(x1, y1) || rowOrder[GetIndex(x1, y1)] != plant
-                ? 1
-                : 0;
-        }
-    }
-
-    // this has an issue where it will exit early if there's a 1-wide peninsula or 1-wide corridor
-    bool TryMoveLeftHandRule(
-        ReadOnlySpan<byte> rowOrder, ReadOnlySpan<PlotPosition> plotPositions, byte plant,
-        ref Direction direction, ref Position position)
-    {
-        var leftTurn = TurnLeft(direction);
-        if (TryMove(rowOrder, plotPositions, plant, leftTurn, ref position))
-        {
-            direction = leftTurn;
-            return true;
-        }
-
-        if (TryMove(rowOrder, plotPositions, plant, direction, ref position))
-            return true;
-
-        var rightTurn = TurnRight(direction);
-        if (TryMove(rowOrder, plotPositions, plant, rightTurn, ref position))
-        {
-            direction = rightTurn;
-            return true;
-        }
-
-        var back = TurnAround(direction);
-        if (TryMove(rowOrder, plotPositions, plant, back, ref position))
-        {
-            direction = back;
-            return true;
-        }
-
-        return false;
-    }
-
-    bool TryMove(
-        ReadOnlySpan<byte> rowOrder, ReadOnlySpan<PlotPosition> plotPositions, byte plant, Direction direction,
-        ref Position position)
-    {
-        var (x, y) = MoveOne(in position, direction);
         if (!IsInBounds(x, y))
-            return false;
-
-        var index = GetIndex(x, y);
-        if (rowOrder[index] != plant)
-            return false;
-
-        if (plotPositions[index].RegionId == 0)
         {
-            position = new((byte)x, (byte)y);
-            return true;
+            neighbor = new Neighbor(default, (short)x, (short)y, OutOfBounds: true, Visited: false);
+            return;
         }
 
-        return false;
+        var plant = plants.Get(x, y);
+        var visited = plotPositions.Get(x, y).RegionId != 0;
+        neighbor = new Neighbor(plant, (short)x, (short)y, OutOfBounds: false, visited);
     }
-
-    int GetIndex(int x, int y) => y * Width + x;
 
     bool IsInBounds(int x, int y)
         => (uint)x < (uint)Width && (uint)y < (uint)Height;
-
-    static (int X, int Y) MoveOne(in Position start, Direction direction) => direction switch
-    {
-        Direction.Up => (start.X, start.Y - 1),
-        Direction.Down => (start.X, start.Y + 1),
-        Direction.Left => (start.X - 1, start.Y),
-        Direction.Right => (start.X + 1, start.Y),
-        _ => throw new ArgumentOutOfRangeException(nameof(direction))
-    };
-
-    static Direction TurnAround(Direction direction) => direction switch
-    {
-        Direction.Up => Direction.Down,
-        Direction.Down => Direction.Up,
-        Direction.Left => Direction.Right,
-        Direction.Right => Direction.Left,
-        _ => throw new ArgumentOutOfRangeException(nameof(direction))
-    };
-
-    static Direction TurnLeft(Direction direction) => direction switch
-    {
-        Direction.Up => Direction.Left,
-        Direction.Left => Direction.Down,
-        Direction.Down => Direction.Right,
-        Direction.Right => Direction.Up,
-        _ => throw new ArgumentOutOfRangeException(nameof(direction))
-    };
-
-    static Direction TurnRight(Direction direction) => direction switch
-    {
-        Direction.Up => Direction.Right,
-        Direction.Right => Direction.Down,
-        Direction.Down => Direction.Left,
-        Direction.Left => Direction.Up,
-        _ => throw new ArgumentOutOfRangeException(nameof(direction))
-    };
 }
 
 class MapData
@@ -247,6 +169,27 @@ class MapData
     public int Width { get; init; }
 }
 
+readonly ref struct RowOrderSpan<T>
+{
+    public RowOrderSpan(Span<T> span, int width, int height)
+    {
+        if (span.Length != width * height)
+            throw new ArgumentException("Span length must be width * height");
+
+        Span = span;
+        Width = width;
+        Height = height;
+    }
+
+    public Span<T> Span { get; }
+    public int Width { get; }
+    public int Height { get; }
+
+    public T Get(int x, int y) => Span[GetIndex(x, y)];
+    public int GetIndex(int x, int y) => y * Width + x;
+    public ref T GetRef(int x, int y) => ref Span[GetIndex(x, y)];
+}
+
 enum Direction : byte
 {
     None,
@@ -256,6 +199,10 @@ enum Direction : byte
     Right
 }
 
-record struct PlotPosition(byte Plant, int RegionId, byte X, byte Y);
+record struct Neighbor(byte Plant, short X, short Y, bool OutOfBounds, bool Visited)
+{
+    public readonly bool IsPerimiter(byte plant) => OutOfBounds || plant != Plant;
+    public readonly bool ShouldVisit(byte plant) => plant == Plant && !Visited;
+}
 
-record struct Position(byte X, byte Y);
+record struct PlotPosition(byte Plant, int RegionId, byte X, byte Y);
