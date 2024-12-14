@@ -61,11 +61,26 @@ var i = 0;
 var tokens1 = 0L;
 foreach (var machine in machines.Span)
 {
-    Console.WriteLine($"Playing machine {i}");
-    if (TryWinPrize1(in machine, out var minimumTokens))
+    //Console.WriteLine($"Playing machine {i}");
+    if (TryWinPrize(in machine, out var tokens))
     {
-        Console.WriteLine($"  tokens: {minimumTokens}");
-        tokens1 += minimumTokens;
+        //Console.WriteLine($"  tokens: {tokens}");
+        tokens1 += tokens;
+    }
+
+    i++;
+}
+
+i = 0;
+var tokens2 = 0L;
+foreach (var machine in machines.Span)
+{
+    //Console.WriteLine($"Playing machine {i}");
+    var machine2 = machine.ToPart2Machine();
+    if (TryWinPrize(in machine2, out var tokens))
+    {
+        //Console.WriteLine($"  tokens: {tokens}");
+        tokens2 += tokens;
     }
 
     i++;
@@ -74,9 +89,10 @@ foreach (var machine in machines.Span)
 var elapsed = TimeProvider.System.GetElapsedTime(start);
 
 Console.WriteLine($"Part 1: Minimum tokens: {tokens1}");
+Console.WriteLine($"Part 2: Minimum tokens: {tokens2}");
 Console.WriteLine($"Processed {bytes.Length:N0} input bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
-static bool TryWinPrize1(in Machine machine, out int tokens)
+static bool TryWinPrize(in Machine machine, out long tokens)
 {
     const int aTokens = 3;
     const int bTokens = 1;
@@ -87,71 +103,30 @@ static bool TryWinPrize1(in Machine machine, out int tokens)
     var lineA = new LineSegment(prize.X, prize.Y, prize.X + buttonA.X, prize.Y + buttonA.Y);
     var lineB = new LineSegment(0, 0, buttonB.X, buttonB.Y);
 
-    if (!TryGetIntersection(in lineA, in lineB, out var intersection)
-        || intersection.X > prize.X || intersection.Y > prize.Y
-        || !double.IsInteger(intersection.X) || !double.IsInteger(intersection.Y))
+    // this has an issue because there's still a chance to win if button A and B are parallel
+    if (!TryGetIntegerIntersection(in lineA, in lineB, out var intersection)
+        || intersection.X > prize.X || intersection.Y > prize.Y)
     {
-        tokens = int.MaxValue;
+        tokens = long.MaxValue;
         return false;
     }
 
-    var segment2 = new LineSegment((int)intersection.X, (int)intersection.Y, prize.X, prize.Y);
-    var numAPresses = segment2.DX > 0
-        ? segment2.DX / buttonA.X
-        : segment2.DY / buttonA.Y;
-    var numBPresses = intersection.X > 0
-        ? intersection.X / buttonB.X
-        : intersection.Y / buttonB.Y;
+    var segment2 = new LineSegment(intersection.X, intersection.Y, prize.X, prize.Y);
+    var (numAPresses, remainderA) = buttonA.X > 0
+        ? Math.DivRem(segment2.DX, buttonA.X)
+        : Math.DivRem(segment2.DY, buttonA.Y);
+    var (numBPresses, remainderB) = buttonB.X > 0
+        ? Math.DivRem(intersection.X, buttonB.X)
+        : Math.DivRem(intersection.Y, buttonB.Y);
 
-    if (!double.IsInteger(numAPresses) || !double.IsInteger(numBPresses))
+    if (remainderA != 0 || remainderB != 0)
     {
-        tokens = int.MaxValue;
+        tokens = long.MaxValue;
         return false;
     }
 
-    tokens = (int)numAPresses * aTokens + (int)numBPresses * bTokens;
+    tokens = numAPresses * aTokens + numBPresses * bTokens;
     return true;
-}
-
-// I think we need to find the intersection of the line B intersecting (0, 0) and line A intersecting the prize
-// first find where line B from (0, 0) intersects with prize.Y and get line segment
-// second, find where line A from prize intersects with Y = 0 and get line segment
-// third, get intersection (if it exists)
-// fourth, use intersection to determine B presses and A presses (if integer numbers)
-static bool TryWinPrize(in Machine machine, out int tokens)
-{
-    var machineB = machine;
-    var statusB = machineB.PressB();
-    if (statusB == Status.Won)
-    {
-        tokens = machineB.Tokens;
-        return true;
-    }
-
-    var machineA = machine;
-    var statusA = machineA.PressA();
-    if (statusA == Status.Won)
-    {
-        tokens = machineA.Tokens;
-        return true;
-    }
-
-    var distanceA = machineA.GetDistance();
-    var distanceB = machineB.GetDistance();
-    switch (statusA, statusB)
-    {
-        case (Status.Lost, Status.Lost):
-            tokens = int.MaxValue;
-            return false;
-        case (Status.Lost, _):
-            return TryWinPrize(in machineB, out tokens);
-        case (_, Status.Lost):
-            return TryWinPrize(in machineA, out tokens);
-        default:
-            return distanceB <= distanceA
-                ? TryWinPrize(in machineB, out tokens)
-                : TryWinPrize(in machineA, out tokens);
-    }
 }
 
 bool TryParseButton(ReadOnlySpan<byte> line, out Button button)
@@ -185,7 +160,7 @@ bool TryParsePrize(ReadOnlySpan<byte> line, out Prize prize)
 }
 
 // based on https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Given_two_points_on_each_line
-static bool TryGetIntersection(in LineSegment line1, in LineSegment line2, out Point intersection)
+static bool TryGetIntegerIntersection(in LineSegment line1, in LineSegment line2, out Point intersection)
 {
     line1.Deconstruct(out var x1, out var y1, out var x2, out var y2);
     line2.Deconstruct(out var x3, out var y3, out var x4, out var y4);
@@ -200,73 +175,35 @@ static bool TryGetIntersection(in LineSegment line1, in LineSegment line2, out P
     var pxNumerator = (x1 * y2 - y1 * x2) * (x3 - x4) - (x1 - x2) * (x3 * y4 - y3 * x4);
     var pyNumerator = (x1 * y2 - y1 * x2) * (y3 - y4) - (y1 - y2) * (x3 * y4 - y3 * x4);
 
-    var px = pxNumerator * 1.0 / denominator;
-    var py = pyNumerator * 1.0 / denominator;
+    var (px, pxRemainder) = Math.DivRem(pxNumerator, denominator);
+    var (py, pyRemainder) = Math.DivRem(pyNumerator, denominator);
+
+    if (pxRemainder != 0 || pyRemainder != 0)
+    {
+        intersection = default;
+        return false;
+    }
 
     intersection = new Point(px, py);
     return true;
 }
 
-record struct Claw(int X, int Y)
-{
-    public void Move(in Button button)
-    {
-        X += button.X;
-        Y += button.Y;
-    }
-}
-
 record struct Button(int X, int Y);
-record struct Prize(int X, int Y);
-record struct Point(double X, double Y);
 
-record struct LineSegment(int X1, int Y1, int X2, int Y2)
+record struct Prize(long X, long Y)
 {
-    public readonly int DX => X2 - X1;
-    public readonly int DY => Y2 - Y1;
+    public readonly Prize ToPart2Prize() => new(X + 10000000000000L, Y + 10000000000000L);
 }
 
-struct Machine(Button buttonA, Button buttonB, Prize prize)
+record struct Point(long X, long Y);
+
+record struct LineSegment(long X1, long Y1, long X2, long Y2)
 {
-    private Claw _claw;
-
-    public Button ButtonA { get; } = buttonA;
-    public Button ButtonB { get; } = buttonB;
-    public readonly Claw Claw => _claw;
-    public readonly Prize Prize { get; } = prize;
-    public int Tokens { get; private set; }
-
-    public readonly double GetDistance() => GetDistance(Prize.X - Claw.X, Prize.Y - Claw.Y);
-    public Status PressA() => PressButton(ButtonA, 3);
-    public Status PressB() => PressButton(ButtonB, 1);
-
-    private Status PressButton(in Button button, int tokens)
-    {
-        Tokens += tokens;
-
-        _claw.Move(in button);
-        if (Claw.X == Prize.X && Claw.Y == Prize.Y)
-            return Status.Won;
-
-        if (Claw.X > Prize.X || Claw.Y > Prize.Y)
-            return Status.Lost;
-
-        return Status.Moved;
-    }
-
-    public void Reset()
-    {
-        _claw = new(0, 0);
-        Tokens = 0;
-    }
-
-    static double GetDistance(int x, int y) => Math.Sqrt(x * x + y * y);
+    public readonly long DX => X2 - X1;
+    public readonly long DY => Y2 - Y1;
 }
 
-enum Status
+record struct Machine(Button ButtonA, Button ButtonB, Prize Prize)
 {
-    None,
-    Moved,
-    Won,
-    Lost
+    public readonly Machine ToPart2Machine() => new(ButtonA, ButtonB, Prize.ToPart2Prize());
 }
