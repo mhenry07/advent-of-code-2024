@@ -59,7 +59,10 @@ foreach (var machine in machines.Span)
 {
     Console.WriteLine($"Playing machine {i}");
     if (TryWinPrize(in machine, out var minimumTokens))
+    {
+        Console.WriteLine($"  tokens: {minimumTokens}");
         tokens1 += minimumTokens;
+    }
 
     i++;
 }
@@ -69,38 +72,40 @@ var elapsed = TimeProvider.System.GetElapsedTime(start);
 Console.WriteLine($"Part 1: Minimum tokens: {tokens1}");
 Console.WriteLine($"Processed {bytes.Length:N0} input bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
-// this takes far too long
-// I think we need to find the intersection of the line B intersecting (0, 0) and line A intersecting the prize
 static bool TryWinPrize(in Machine machine, out int minimumTokens)
 {
     var machineB = machine;
     var statusB = machineB.PressB();
-    var (resultB, tokensB) = statusB switch
+    if (statusB == Status.Won)
     {
-        Status.Moved => TryWinPrize(in machineB, out var c) ? (true, c) : (false, int.MaxValue),
-        Status.Won => (true, machineB.Tokens),
-        _ => (false, int.MaxValue)
-    };
+        minimumTokens = machineB.Tokens;
+        return true;
+    }
 
     var machineA = machine;
     var statusA = machineA.PressA();
-    var (resultA, tokensA) = statusA switch
+    if (statusA == Status.Won)
     {
-        Status.Moved => TryWinPrize(in machineA, out var c) ? (true, c) : (false, int.MaxValue),
-        Status.Won => (true, machineA.Tokens),
-        _ => (false, int.MaxValue)
-    };
+        minimumTokens = machineA.Tokens;
+        return true;
+    }
 
-    bool result;
-    (result, minimumTokens) = (resultA, resultB) switch
+    var distanceA = machineA.GetDistance();
+    var distanceB = machineB.GetDistance();
+    switch (statusA, statusB)
     {
-        (true, true) => (true, Math.Min(tokensA, tokensB)),
-        (true, false) => (true, tokensA),
-        (false, true) => (true, tokensB),
-        (false, false) => (false, int.MaxValue)
-    };
-
-    return result;
+        case (Status.Lost, Status.Lost):
+            minimumTokens = int.MaxValue;
+            return false;
+        case (Status.Lost, _):
+            return TryWinPrize(in machineB, out minimumTokens);
+        case (_, Status.Lost):
+            return TryWinPrize(in machineA, out minimumTokens);
+        default:
+            return distanceB <= distanceA
+                ? TryWinPrize(in machineB, out minimumTokens)
+                : TryWinPrize(in machineA, out minimumTokens);
+    }
 }
 
 bool TryParseButton(ReadOnlySpan<byte> line, out Button button)
@@ -155,6 +160,7 @@ struct Machine(Button buttonA, Button buttonB, Prize prize)
     public readonly Claw Claw => _claw;
     public int Tokens { get; private set; }
 
+    public readonly double GetDistance() => GetDistance(prize.X - Claw.X, prize.Y - Claw.Y);
     public Status PressA() => PressButton(ButtonA, 3);
     public Status PressB() => PressButton(ButtonB, 1);
 
@@ -177,6 +183,8 @@ struct Machine(Button buttonA, Button buttonB, Prize prize)
         _claw = new(0, 0);
         Tokens = 0;
     }
+
+    static double GetDistance(int x, int y) => Math.Sqrt(x * x + y * y);
 }
 
 enum Status
