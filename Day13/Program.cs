@@ -28,6 +28,9 @@ var bytes = useExample switch
     _ => File.ReadAllBytes("input.txt")
 };
 
+const int ATokens = 3;
+const int BTokens = 1;
+
 var buttonAXPrefix = "Button A:"u8;
 var buttonBXPrefix = "Button B:"u8;
 var prizePrefix = "Prize:"u8;
@@ -43,11 +46,11 @@ foreach (var range in bytes.Split("\r\n"u8))
 
     if (line.StartsWith(buttonAXPrefix))
     {
-        TryParseButton(line, out buttonA);
+        TryParseButton(line, ATokens, out buttonA);
     }
     else if (line.StartsWith(buttonBXPrefix))
     {
-        TryParseButton(line, out buttonB);
+        TryParseButton(line, BTokens, out buttonB);
     }
     else if (line.StartsWith(prizePrefix))
     {
@@ -94,49 +97,59 @@ Console.WriteLine($"Processed {bytes.Length:N0} input bytes in: {elapsed.TotalMi
 
 static bool TryWinPrize(in Machine machine, out long tokens)
 {
-    const int aTokens = 3;
-    const int bTokens = 1;
-
     var buttonA = machine.ButtonA;
     var buttonB = machine.ButtonB;
     var prize = machine.Prize;
     var lineA = new LineSegment(prize.X, prize.Y, prize.X + buttonA.X, prize.Y + buttonA.Y);
     var lineB = new LineSegment(0, 0, buttonB.X, buttonB.Y);
 
-    // this has an issue because there's still a chance to win if button A and B are parallel
-    if (!TryGetIntegerIntersection(in lineA, in lineB, out var intersection)
-        || intersection.X > prize.X || intersection.Y > prize.Y)
+    if (!TryGetIntegerIntersection(in lineA, in lineB, out var intersection))
+    {
+        // there's still a chance to win if button A and B are parallel
+        var straightToPrize = new LineSegment(0, 0, prize.X, prize.Y);
+        if (!TryGetIntegerIntersection(in straightToPrize, in lineB, out intersection))
+        {
+            var button = buttonB.X > 0 && buttonB.X * BTokens <= buttonA.X * ATokens
+                || buttonB.Y * ATokens <= buttonB.Y * BTokens
+                ? buttonB
+                : buttonA;
+            if (TryCountButtonPresses(in button, intersection.X, intersection.Y, out var numPresses))
+            {
+                tokens = numPresses * button.Tokens;
+                return true;
+            }
+        }
+
+        tokens = long.MaxValue;
+        return false;
+    }
+
+    if (intersection.X > prize.X || intersection.Y > prize.Y)
     {
         tokens = long.MaxValue;
         return false;
     }
 
     var segment2 = new LineSegment(intersection.X, intersection.Y, prize.X, prize.Y);
-    var (numAPresses, remainderA) = buttonA.X > 0
-        ? Math.DivRem(segment2.DX, buttonA.X)
-        : Math.DivRem(segment2.DY, buttonA.Y);
-    var (numBPresses, remainderB) = buttonB.X > 0
-        ? Math.DivRem(intersection.X, buttonB.X)
-        : Math.DivRem(intersection.Y, buttonB.Y);
-
-    if (remainderA != 0 || remainderB != 0)
+    if (!TryCountButtonPresses(in buttonA, segment2.DX, segment2.DY, out var numAPresses)
+        || !TryCountButtonPresses(in buttonB, intersection.X, intersection.Y, out var numBPresses))
     {
         tokens = long.MaxValue;
         return false;
     }
 
-    tokens = numAPresses * aTokens + numBPresses * bTokens;
+    tokens = numAPresses * ATokens + numBPresses * BTokens;
     return true;
 }
 
-bool TryParseButton(ReadOnlySpan<byte> line, out Button button)
+bool TryParseButton(ReadOnlySpan<byte> line, int tokens, out Button button)
 {
     var xIndex = line.IndexOf("X+"u8);
     var yIndex = line.LastIndexOf("Y+"u8);
     if (xIndex >= 0 && Utf8Parser.TryParse(line[(xIndex + 2)..], out int x, out _)
         && yIndex >= 0 && Utf8Parser.TryParse(line[(yIndex + 2)..], out int y, out _))
     {
-        button = new(x, y);
+        button = new(x, y, tokens);
         return true;
     }
 
@@ -157,6 +170,16 @@ bool TryParsePrize(ReadOnlySpan<byte> line, out Prize prize)
 
     prize = default;
     return false;
+}
+
+static bool TryCountButtonPresses(in Button button, long distanceX, long distanceY, out long count)
+{
+    long remainder;
+    (count, remainder) = button.X > 0
+        ? Math.DivRem(distanceX, button.X)
+        : Math.DivRem(distanceY, button.Y);
+
+    return remainder == 0;
 }
 
 // based on https://en.wikipedia.org/wiki/Line%E2%80%93line_intersection#Given_two_points_on_each_line
@@ -188,7 +211,7 @@ static bool TryGetIntegerIntersection(in LineSegment line1, in LineSegment line2
     return true;
 }
 
-record struct Button(int X, int Y);
+record struct Button(int X, int Y, int Tokens);
 
 record struct Prize(long X, long Y)
 {
