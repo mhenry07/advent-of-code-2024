@@ -5,41 +5,53 @@ var start = TimeProvider.System.GetTimestamp();
 
 int? useExample = null;
 var exampleBytes1 = """
-##########
-#..O..O.O#
-#......O.#
-#.OO..O.O#
-#..O@..O.#
-#O#..O...#
-#O..O..O.#
-#.OO.O.OO#
-#....O...#
-##########
+    ##########
+    #..O..O.O#
+    #......O.#
+    #.OO..O.O#
+    #..O@..O.#
+    #O#..O...#
+    #O..O..O.#
+    #.OO.O.OO#
+    #....O...#
+    ##########
 
-<vv>^<v^>v>^vv^v>v<>v^v<v<^vv<<<^><<><>>v<vvv<>^v^>^<<<><<v<<<v^vv^v>^
-vvv<<^>^v^^><<>>><>^<<><^vv^^<>vvv<>><^^v>^>vv<>v<<<<v<^v>^<^^>>>^<v<v
-><>vv>v^v^<>><>>>><^^>vv>v<^^^>>v^v^<^^>v^^>v^<^v>v<>>v^v^<v>v^^<^^vv<
-<<v<^>>^^^^>>>v^<>vvv^><v<<<>^^^vv^<vvv>^>v<^^^^v<>^>vvvv><>>v^<<^^^^^
-^><^><>>><>^^<<^^v>>><^<v>^<vv>>v>>>^v><>^v><<<<v>>v<v<v>vvv>^<><<>^><
-^>><>^v<><^vvv<^^<><v<<<<<><^v<<<><<<^^<v<^^^><^>>^<v^><<<^>>^v<v^v<v^
->^>>^v>vv>^<<^v<>><<><<v<<v><>v<^vv<<<>^^v^>^^>>><<^v>>v^v><^^>>^<>vv^
-<><^^>^^^<><vvvvv^v<v<<>^v<v>v<<^><<><<><<<^^<<<^<<>><<><^^^>^^<>^>v<>
-^^>vv<^v^v<vv>^<><v<^v>^^^>>>^^vvv^>vvv<>>>^<^>>>>>^<<^v>^vvv<>^<><<v>
-v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^
-"""u8;
+    <vv>^<v^>v>^vv^v>v<>v^v<v<^vv<<<^><<><>>v<vvv<>^v^>^<<<><<v<<<v^vv^v>^
+    vvv<<^>^v^^><<>>><>^<<><^vv^^<>vvv<>><^^v>^>vv<>v<<<<v<^v>^<^^>>>^<v<v
+    ><>vv>v^v^<>><>>>><^^>vv>v<^^^>>v^v^<^^>v^^>v^<^v>v<>>v^v^<v>v^^<^^vv<
+    <<v<^>>^^^^>>>v^<>vvv^><v<<<>^^^vv^<vvv>^>v<^^^^v<>^>vvvv><>>v^<<^^^^^
+    ^><^><>>><>^^<<^^v>>><^<v>^<vv>>v>>>^v><>^v><<<<v>>v<v<v>vvv>^<><<>^><
+    ^>><>^v<><^vvv<^^<><v<<<<<><^v<<<><<<^^<v<^^^><^>>^<v^><<<^>>^v<v^v<v^
+    >^>>^v>vv>^<<^v<>><<><<v<<v><>v<^vv<<<>^^v^>^^>>><<^v>>v^v><^^>>^<>vv^
+    <><^^>^^^<><vvvvv^v<v<<>^v<v>v<<^><<><<><<<^^<<<^<<>><<><^^^>^^<>^>v<>
+    ^^>vv<^v^v<vv>^<><v<^v>^^^>>>^^vvv^>vvv<>>>^<^>>>>>^<<^v>^vvv<>^<><<v>
+    v^^>>><<^^<>>^v^<v^vv<>v^<<>^<^v^v><^<<<><<^<v><v<>vv>>v><v^<vv<>v^<<^
+    """u8;
 
 var exampleBytes2 = """
-########
-#..O.O.#
-##@.O..#
-#...O..#
-#.#.O..#
-#...O..#
-#......#
-########
+    ########
+    #..O.O.#
+    ##@.O..#
+    #...O..#
+    #.#.O..#
+    #...O..#
+    #......#
+    ########
 
-<^^>>>vv<v>>v<<
-"""u8;
+    <^^>>>vv<v>>v<<
+    """u8;
+
+var exampleBytes3 = """
+    #######
+    #...#.#
+    #.....#
+    #..OO@#
+    #..O..#
+    #.....#
+    #######
+
+    <vv<<^^<<^^
+    """u8;
 
 const byte MoveUp = (byte)'^';
 const byte MoveDown = (byte)'v';
@@ -50,6 +62,7 @@ var bytes = useExample switch
 {
     1 => exampleBytes1,
     2 => exampleBytes2,
+    3 => exampleBytes3,
     _ => File.ReadAllBytes("input.txt").AsSpan()
 };
 
@@ -58,22 +71,37 @@ var rowOrderSpan = new RowOrderSpan<byte>(mapData.RowOrder, mapData.Width, mapDa
 
 var lineBuffer = new char[mapData.Width];
 var moves = bytes[mapNumBytes..];
-var warehouse = new Warehouse(in rowOrderSpan, in robot);
+var warehouse = new Warehouse(rowOrderSpan, robot);
+warehouse.ToWideWarehouse(out var wideWarehouse);
 foreach (var move in moves)
 {
     if (!TryParseMove(move, out var dx, out var dy))
         continue;
 
     warehouse.TryMove(dx, dy);
-    warehouse.Print(lineBuffer, move);
+    //warehouse.Print(lineBuffer, move);
     //Thread.Sleep(1);
 }
 
 var total1 = warehouse.SumBoxGpsCoordinates();
 
+lineBuffer = new char[wideWarehouse.Width];
+foreach (var move in moves)
+{
+    if (!TryParseMove(move, out var dx, out var dy))
+        continue;
+
+    wideWarehouse.TryMove(dx, dy);
+    wideWarehouse.Print(lineBuffer, move);
+    //Thread.Sleep(1);
+}
+
+var total2 = wideWarehouse.SumBoxGpsCoordinates();
+
 var elapsed = TimeProvider.System.GetElapsedTime(start);
 
 Console.WriteLine($"Total 1: {total1}");
+Console.WriteLine($"Total 2: {total2}");
 Console.WriteLine($"Processed {bytes.Length:N0} input bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
 static bool TryParseMove(byte source, out int dx, out int dy)
@@ -88,6 +116,14 @@ static bool TryParseMove(byte source, out int dx, out int dy)
     };
 
     return (dx, dy) != (0, 0);
+}
+
+record struct Position(int X, int Y);
+
+record struct WideBox(int LeftX, int RightX, int Y)
+{
+    public static WideBox FromLeft(int x, int y) => new(x, x + 1, y);
+    public static WideBox FromRight(int x, int y) => new(x - 1, x, y);
 }
 
 class MapData
@@ -142,15 +178,16 @@ class MapData
     public int Width { get; init; }
 }
 
-record struct Position(int X, int Y);
-
-ref struct Warehouse(in RowOrderSpan<byte> rowOrder, in Position robot)
+ref struct Warehouse(RowOrderSpan<byte> rowOrder, Position robot)
 {
     const byte Box = (byte)'O';
+    const byte BoxL = (byte)'[';
+    const byte BoxR = (byte)']';
     const byte Empty = (byte)'.';
     const byte Robot = (byte)'@';
     const byte Wall = (byte)'#';
 
+    private bool _isWide;
     private Position _robot = robot;
     private readonly RowOrderSpan<byte> _rowOrder = rowOrder;
 
@@ -176,6 +213,7 @@ ref struct Warehouse(in RowOrderSpan<byte> rowOrder, in Position robot)
 
     public readonly long SumBoxGpsCoordinates()
     {
+        var boxByte = _isWide ? BoxL : Box;
         var index = 0;
         var span = _rowOrder.Span;
         var sum = 0L;
@@ -183,7 +221,7 @@ ref struct Warehouse(in RowOrderSpan<byte> rowOrder, in Position robot)
         {
             for (var x = 0; x < Width; x++)
             {
-                if (span[index] == Box)
+                if (span[index] == boxByte)
                     sum += GetGpsCoordinate(x, y);
 
                 index++;
@@ -193,14 +231,48 @@ ref struct Warehouse(in RowOrderSpan<byte> rowOrder, in Position robot)
         return sum;
     }
 
+    public void ToWideWarehouse(out Warehouse warehouse)
+    {
+        var source = _rowOrder.Span;
+        var wideBytes = new byte[source.Length * 2];
+        var destination = wideBytes.AsSpan();
+        for (int i = 0, j = 0; i < source.Length; i++, j += 2)
+        {
+            var tile = source[i];
+            switch (tile)
+            {
+                case Empty:
+                case Wall:
+                    destination[j] = tile;
+                    destination[j + 1] = tile;
+                    break;
+                case Box:
+                    destination[j] = BoxL;
+                    destination[j + 1] = BoxR;
+                    break;
+                case Robot:
+                    destination[j] = Robot;
+                    destination[j + 1] = Empty;
+                    break;
+            }
+        }
+
+        var rowOrder = new RowOrderSpan<byte>(wideBytes, 2 * Width, Height);
+        var robot = _robot with { X = 2 * _robot.X };
+        warehouse = new Warehouse(rowOrder, robot) { _isWide = true };
+    }
+
     public bool TryMove(int dx, int dy)
     {
+        if (_isWide)
+            return TryMoveWide(dx, dy);
+
         var numBoxes = 0;
         var x = _robot.X + dx;
         var y = _robot.Y + dy;
-        while (_rowOrder.TryGet(x, y, out var value))
+        while (_rowOrder.TryGet(x, y, out var tile))
         {
-            switch (value)
+            switch (tile)
             {
                 case Box:
                     numBoxes++;
@@ -223,5 +295,89 @@ ref struct Warehouse(in RowOrderSpan<byte> rowOrder, in Position robot)
         }
 
         return false;
+    }
+
+    private bool TryMoveWide(int dx, int dy)
+    {
+        using var boxes = new PoolableList<WideBox>();
+        var x = _robot.X + dx;
+        var y = _robot.Y + dy;
+        if (!CanMoveWideDfs(x, y, dx, dy, boxes))
+            return false;
+
+        var boxesSpan = boxes.Span;
+        boxesSpan.Reverse(); // order matters for the way we update the boxes in the warehouse
+        foreach (var box in boxesSpan)
+            Move(in box, dx, dy);
+
+        var robot = new Position(x, y);
+        _rowOrder.GetRef(_robot.X, _robot.Y) = Empty;
+        _rowOrder.GetRef(robot.X, robot.Y) = Robot;
+        _robot = robot;
+
+        return true;
+    }
+
+    private void Move(in WideBox box, int dx, int dy)
+    {
+        var newBox = new WideBox(box.LeftX + dx, box.RightX + dx, box.Y + dy);
+        switch (dx, dy)
+        {
+            case (-1, 0):
+                _rowOrder.GetRef(newBox.LeftX, newBox.Y) = BoxL;
+                _rowOrder.GetRef(newBox.RightX, newBox.Y) = BoxR;
+                _rowOrder.GetRef(box.RightX, box.Y) = Empty;
+                break;
+            case (1, 0):
+                _rowOrder.GetRef(newBox.RightX, newBox.Y) = BoxR;
+                _rowOrder.GetRef(newBox.LeftX, newBox.Y) = BoxL;
+                _rowOrder.GetRef(box.LeftX, box.Y) = Empty;
+                break;
+            case (0, _):
+                _rowOrder.GetRef(newBox.LeftX, newBox.Y) = BoxL;
+                _rowOrder.GetRef(newBox.RightX, newBox.Y) = BoxR;
+                _rowOrder.GetRef(box.LeftX, box.Y) = Empty;
+                _rowOrder.GetRef(box.RightX, box.Y) = Empty;
+                break;
+        }
+    }
+
+    private readonly bool CanMoveWideDfs(int x, int y, int dx, int dy, PoolableList<WideBox> boxes)
+    {
+        if (!_rowOrder.TryGet(x, y, out var tile))
+            return false;
+
+        switch (tile)
+        {
+            case BoxL:
+                boxes.Add(WideBox.FromLeft(x, y));
+                if (dx == 0)
+                {
+                    return CanMoveWideDfs(x, y + dy, dx, dy, boxes)
+                        && CanMoveWideDfs(x + 1, y + dy, dx, dy, boxes);
+                }
+                else
+                {
+                    return CanMoveWideDfs(x + 2 * dx, y + dy, dx, dy, boxes);
+                }
+
+            case BoxR:
+                boxes.Add(WideBox.FromRight(x, y));
+                if (dx == 0)
+                {
+                    return CanMoveWideDfs(x - 1, y + dy, dx, dy, boxes)
+                        && CanMoveWideDfs(x, y + dy, dx, dy, boxes);
+                }
+                else
+                {
+                    return CanMoveWideDfs(x + 2 * dx, y + dy, dx, dy, boxes);
+                }
+
+            case Wall:
+                return false;
+
+            default:
+                return true;
+        }
     }
 }
