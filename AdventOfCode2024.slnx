@@ -1,0 +1,17 @@
+<Solution>
+  <Project Path="Core/Core.csproj" />
+  <Project Path="Day01/Day01.csproj" />
+  <Project Path="Day02/Day02.csproj" />
+  <Project Path="Day03/Day03.csproj" />
+  <Project Path="Day04/Day04.csproj" />
+  <Project Path="Day05/Day05.csproj" />
+  <Project Path="Day06/Day06.csproj" />
+  <Project Path="Day07/Day07.csproj" />
+  <Project Path="Day08/Day08.csproj" />
+  <Project Path="Day09/Day09.csproj" />
+  <Project Path="Day10/Day10.csproj" />
+  <Project Path="Day11/Day11.csproj" />
+  <Project Path="Day12/Day12.csproj" />
+  <Project Path="Day13/Day13.csproj" />
+  <Project Path="Day14/Day14.csproj" />
+</Solution>
