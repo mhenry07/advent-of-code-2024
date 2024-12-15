@@ -71,6 +71,7 @@ var rowOrderSpan = new RowOrderSpan<byte>(mapData.RowOrder, mapData.Width, mapDa
 
 var lineBuffer = new char[mapData.Width];
 var moves = bytes[mapNumBytes..];
+var lastMove = moves[moves.LastIndexOfAny("^v<>"u8)];
 var warehouse = new Warehouse(rowOrderSpan, robot);
 warehouse.ToWideWarehouse(out var wideWarehouse);
 foreach (var move in moves)
@@ -85,20 +86,23 @@ foreach (var move in moves)
 
 var total1 = warehouse.SumBoxGpsCoordinates();
 
-lineBuffer = new char[wideWarehouse.Width];
+var wideLineBuffer = new char[wideWarehouse.Width];
 foreach (var move in moves)
 {
     if (!TryParseMove(move, out var dx, out var dy))
         continue;
 
     wideWarehouse.TryMove(dx, dy);
-    wideWarehouse.Print(lineBuffer, move);
+    //wideWarehouse.Print(wideLineBuffer, move);
     //Thread.Sleep(1);
 }
 
 var total2 = wideWarehouse.SumBoxGpsCoordinates();
 
 var elapsed = TimeProvider.System.GetElapsedTime(start);
+
+warehouse.Print(lineBuffer, lastMove, clear: false);
+wideWarehouse.Print(wideLineBuffer, lastMove, clear: false);
 
 Console.WriteLine($"Total 1: {total1}");
 Console.WriteLine($"Total 2: {total2}");
@@ -196,12 +200,14 @@ ref struct Warehouse(RowOrderSpan<byte> rowOrder, Position robot)
 
     public static int GetGpsCoordinate(int x, int y) => 100 * y + x;
 
-    public readonly void Print(char[] lineBuffer, byte move)
+    public readonly void Print(char[] lineBuffer, byte move, bool clear = true)
     {
-        var index = 0;
-        Console.Clear();
+        if (clear)
+            Console.Clear();
+
         Console.WriteLine($"Move {(char)move}:");
 
+        var index = 0;
         for (var y = 0; y < Height; y++)
         {
             Encoding.UTF8.GetChars(_rowOrder.Span.Slice(index, Width), lineBuffer);
@@ -300,46 +306,13 @@ ref struct Warehouse(RowOrderSpan<byte> rowOrder, Position robot)
     private bool TryMoveWide(int dx, int dy)
     {
         using var boxes = new PoolableList<WideBox>();
-        var x = _robot.X + dx;
-        var y = _robot.Y + dy;
-        if (!CanMoveWideDfs(x, y, dx, dy, boxes))
+        if (!CanMoveWideDfs(_robot.X + dx, _robot.Y + dy, dx, dy, boxes))
             return false;
 
-        var boxesSpan = boxes.Span;
-        boxesSpan.Reverse(); // order matters for the way we update the boxes in the warehouse
-        foreach (var box in boxesSpan)
-            Move(in box, dx, dy);
-
-        var robot = new Position(x, y);
-        _rowOrder.GetRef(_robot.X, _robot.Y) = Empty;
-        _rowOrder.GetRef(robot.X, robot.Y) = Robot;
-        _robot = robot;
-
+        if (boxes.Length > 0)
+            MoveBoxes(boxes.Span, dx, dy);
+        MoveRobot(dx, dy);
         return true;
-    }
-
-    private void Move(in WideBox box, int dx, int dy)
-    {
-        var newBox = new WideBox(box.LeftX + dx, box.RightX + dx, box.Y + dy);
-        switch (dx, dy)
-        {
-            case (-1, 0):
-                _rowOrder.GetRef(newBox.LeftX, newBox.Y) = BoxL;
-                _rowOrder.GetRef(newBox.RightX, newBox.Y) = BoxR;
-                _rowOrder.GetRef(box.RightX, box.Y) = Empty;
-                break;
-            case (1, 0):
-                _rowOrder.GetRef(newBox.RightX, newBox.Y) = BoxR;
-                _rowOrder.GetRef(newBox.LeftX, newBox.Y) = BoxL;
-                _rowOrder.GetRef(box.LeftX, box.Y) = Empty;
-                break;
-            case (0, _):
-                _rowOrder.GetRef(newBox.LeftX, newBox.Y) = BoxL;
-                _rowOrder.GetRef(newBox.RightX, newBox.Y) = BoxR;
-                _rowOrder.GetRef(box.LeftX, box.Y) = Empty;
-                _rowOrder.GetRef(box.RightX, box.Y) = Empty;
-                break;
-        }
     }
 
     private readonly bool CanMoveWideDfs(int x, int y, int dx, int dy, PoolableList<WideBox> boxes)
@@ -379,5 +352,32 @@ ref struct Warehouse(RowOrderSpan<byte> rowOrder, Position robot)
             default:
                 return true;
         }
+    }
+
+    private void MoveBoxes(ReadOnlySpan<WideBox> boxes, int dx, int dy)
+    {
+        using var newBoxes = new PoolableList<WideBox>(boxes.Length);
+        foreach (var box in boxes)
+            newBoxes.Add(WideBox.FromLeft(box.LeftX + dx, box.Y + dy));
+
+        foreach (var box in boxes)
+        {
+            _rowOrder.GetRef(box.LeftX, box.Y) = Empty;
+            _rowOrder.GetRef(box.RightX, box.Y) = Empty;
+        }
+
+        foreach (var box in newBoxes.Span)
+        {
+            _rowOrder.GetRef(box.LeftX, box.Y) = BoxL;
+            _rowOrder.GetRef(box.RightX, box.Y) = BoxR;
+        }
+    }
+
+    private void MoveRobot(int dx, int dy)
+    {
+        var robot = new Position(_robot.X + dx, _robot.Y + dy);
+        _rowOrder.GetRef(_robot.X, _robot.Y) = Empty;
+        _rowOrder.GetRef(robot.X, robot.Y) = Robot;
+        _robot = robot;
     }
 }
