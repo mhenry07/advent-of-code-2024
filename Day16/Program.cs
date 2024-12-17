@@ -91,11 +91,14 @@ var node = MoveNode.CreateRoot((byte)startPosition.X, (byte)startPosition.Y, Dir
 if (maze.TryGetBestPath(node, out var bestPath))
     maze.PrintMaze(bestPath, clear: false);
 
+var tiles = maze.CountBestPathsTiles();
+
 Console.WriteLine($"Attempts: {maze.Attempts:N0}");
 
 var elapsed = TimeProvider.System.GetElapsedTime(start);
 
-Console.WriteLine($"Total 1: {bestPath?.Score}");
+Console.WriteLine($"Part 1: Best Score: {bestPath?.Score}");
+Console.WriteLine($"Part 2: Tiles: {tiles}");
 Console.WriteLine($"Processed {bytes.Length:N0} input bytes in: {elapsed.TotalMilliseconds:N3} ms");
 Console.ReadLine();
 
@@ -106,6 +109,7 @@ ref struct Maze
     const byte Wall = (byte)'#';
 
     long _attempts;
+    List<MoveNode> _bestPaths;
     int _bestScore;
     Dictionary<MazeVertexKey, int> _bestScores;
     RowOrderSpan<byte> _tiles;
@@ -201,6 +205,7 @@ ref struct Maze
 
         maze = new Maze
         {
+            _bestPaths = [],
             _bestScore = int.MaxValue,
             _bestScores = bestScores,
             _tiles = rowOrderTiles,
@@ -258,7 +263,13 @@ ref struct Maze
 
             _attempts++;
             if (node.Score < _bestScore)
+            {
+                _bestPaths.Clear();
                 _bestScore = node.Score;
+            }
+
+            if (node.Score <= _bestScore)
+                _bestPaths.Add(node);
 
             if (_attempts % 100_000 == 0)
                 Console.WriteLine($"Attempts: {_attempts:N0}, Best Score: {_bestScore:N0}");
@@ -287,7 +298,7 @@ ref struct Maze
             {
                 var key = new MazeVertexKey((byte)straightPosition.X, (byte)straightPosition.Y, node.Direction);
                 var straightScore = node.Score + straightDistance;
-                if (!_bestScores.TryGetValue(key, out var s) || straightScore < s)
+                if (!_bestScores.TryGetValue(key, out var s) || straightScore <= s)
                 {
                     _bestScores[key] = straightScore;
                     var straight = new MoveNode(
@@ -307,7 +318,7 @@ ref struct Maze
             {
                 var key = vertex.GetKey(leftDirection);
                 var leftScore = node.Score + 1_000;
-                if (!_bestScores.TryGetValue(key, out var s) || leftScore < s)
+                if (!_bestScores.TryGetValue(key, out var s) || leftScore <= s)
                 {
                     _bestScores[key] = leftScore;
                     var left = new MoveNode(node, node.X, node.Y, leftDirection, leftScore);
@@ -322,7 +333,7 @@ ref struct Maze
             {
                 var key = vertex.GetKey(rightDirection);
                 var rightScore = node.Score + 1_000;
-                if (!_bestScores.TryGetValue(key, out var s) || rightScore < s)
+                if (!_bestScores.TryGetValue(key, out var s) || rightScore <= s)
                 {
                     _bestScores[key] = rightScore;
                     var right = new MoveNode(node, node.X, node.Y, rightDirection, rightScore);
@@ -333,6 +344,41 @@ ref struct Maze
         }
 
         return bestPath is not null;
+    }
+
+    public int CountBestPathsTiles()
+    {
+        var tiles = new HashSet<Position>(2 * (Width + Height));
+        foreach (var path in _bestPaths)
+        {
+            var node = path;
+            var parent = node.Parent;
+            while (node is not null)
+            {
+                tiles.Add(node.Position);
+                if (parent is not null)
+                {
+                    var dx = int.Sign(node.X - parent.X);
+                    if (dx != 0)
+                    {
+                        for (var x = parent.X + dx; x != node.X; x += dx)
+                            tiles.Add(new((short)x, node.Y));
+                    }
+
+                    var dy = int.Sign(node.Y - parent.Y);
+                    if (dy != 0)
+                    {
+                        for (var y = parent.Y + dy; y != node.Y; y += dy)
+                            tiles.Add(new(node.X, (short)y));
+                    }
+                }
+
+                node = parent;
+                parent = parent?.Parent;
+            }
+        }
+
+        return tiles.Count;
     }
 
     public readonly void PrintMaze(MoveNode end, bool clear = true)
