@@ -53,22 +53,26 @@ foreach (var range in bytes.Split("\r\n"u8))
 }
 
 var memoized = new Dictionary<byte[], long>(new ByteSpanEqualityComparer());
-var memoizedLookup = memoized.GetAlternateLookup<ReadOnlySpan<byte>>();
+var lookup = memoized.GetAlternateLookup<ReadOnlySpan<byte>>();
 var patterns = patternRanges.Span;
 var total1 = 0L;
+var total2 = 0L;
 foreach (var range in designRanges.Span)
 {
     var design = bytes[range];
-    Console.WriteLine($"Attempting design: {Encoding.UTF8.GetString(design)}");
+    //Console.WriteLine($"Attempting design: {Encoding.UTF8.GetString(design)}");
 
-    var combinations = CountCombinations(design, patterns, memoizedLookup);
+    var combinations = CountCombinations(design, patterns, lookup);
     if (combinations > 0)
         total1++;
+
+    total2 += combinations;
 }
 
 var elapsed = TimeProvider.System.GetElapsedTime(start);
 
 Console.WriteLine($"Part 1: {total1}");
+Console.WriteLine($"Part 2: {total2}");
 Console.WriteLine($"Processed {bytes.Length:N0} input bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
 static long CountCombinations(
