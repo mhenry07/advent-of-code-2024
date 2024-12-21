@@ -5,7 +5,7 @@ using Core;
 
 var start = TimeProvider.System.GetTimestamp();
 
-int? useExample = null;
+int? useExample = 1;
 var exampleBytes1 = """
     ###############
     #...#...#.....#
@@ -52,22 +52,34 @@ var bytes = useExample switch
 var mapData = MapData.FromInput(bytes, out _, out var startPosition, out _);
 Maze.FromMapData(mapData, out var maze);
 
+// day 16 dfs logic resulted in stack overflows, so I had to rewrite to avoid stack overflows
 var normalScore = maze.GetScore(in startPosition, out var startNode, out var endNode);
+//maze.PrintMaze(bestPath, clear: false);
 
 Console.WriteLine($"Normal score: {normalScore}");
 
-var cheatDeltas = maze.GetCheatDeltas(startNode!, endNode!);
+var cheatDeltas2 = maze.GetCheatDeltas(startNode!, endNode!, cheatTime: 2);
+var cheatDeltas20 = maze.GetCheatDeltas(startNode!, endNode!, cheatTime: 20);
 
-Console.WriteLine($"Total cheats: {cheatDeltas.Count}");
+Console.WriteLine($"Total cheats: {cheatDeltas20.Count}");
 
-foreach (var group in cheatDeltas.Values.GroupBy(x => x).OrderByDescending(g => g.Key))
+// I'm getting the same set of time savings but very different counts
+foreach (var group in cheatDeltas20.Values.Where(d => d <= -50).GroupBy(d => d).OrderByDescending(g => g.Key))
     Console.WriteLine($"{group.Count()} cheats save {Math.Abs(group.Key)} picoseconds");
 
-var total1 = cheatDeltas.Values.Count(d => d <= -100);
+// first attempt: 1394 (too high)
+// second attempt: 1366 (too low)
+// third attempt: 1367 (correct)
+// - my logic was sensitive to the starting direction
+var total1 = cheatDeltas2.Values.Count(d => d <= -100);
+
+// -50 for example, -100 for main input
+var total2 = cheatDeltas20.Values.Count(d => d <= -50);
 
 var elapsed = TimeProvider.System.GetElapsedTime(start);
 
 Console.WriteLine($"Part 1:: {total1}");
+Console.WriteLine($"Part 2:: {total2}");
 Console.WriteLine($"Processed {bytes.Length:N0} input bytes in: {elapsed.TotalMilliseconds:N3} ms");
 Console.ReadLine();
 
@@ -78,12 +90,10 @@ ref struct Maze
     const byte Wall = (byte)'#';
 
     int _bestScore;
-    Dictionary<Cheat, int> _cheatDeltas;
     Dictionary<Position, int> _positionScores;
     RowOrderSpan<byte> _tiles;
     ReadOnlySpan<MazeVertex> _vertices;
 
-    public readonly Dictionary<Cheat, int> CheatDeltas => _cheatDeltas;
     public readonly int Width => _tiles.Width;
     public readonly int Height => _tiles.Height;
 
@@ -162,43 +172,10 @@ ref struct Maze
         maze = new Maze
         {
             _bestScore = int.MaxValue,
-            _cheatDeltas = [],
             _positionScores = [],
             _tiles = rowOrderTiles,
             _vertices = vertices
         };
-    }
-
-    private static int GetEastDistance(ReadOnlySpan<MazeVertex> row, int x)
-    {
-        var slice = row[(x + 1)..];
-        if (slice[0].IsVertex)
-            return 1;
-
-        return 0;
-    }
-
-    private static int GetWestDistance(ReadOnlySpan<MazeVertex> row, int x)
-    {
-        if (row[x - 1].IsVertex)
-            return 1;
-
-        return 0;
-    }
-
-    private static int GetNorthSouthDistance(
-        RowOrderSpan<byte> tiles, ReadOnlySpan<MazeVertex> vertices, int x, int y, int dy)
-    {
-        byte distance = 1;
-        if (tiles.TryGetIndex(x, y + distance * dy, out var index))
-        {
-            if (vertices[index].IsVertex)
-                return distance;
-
-            distance++;
-        }
-
-        return 0;
     }
 
     public int GetScore(in Position startPosition, out MoveNode? start, out MoveNode? end)
@@ -254,75 +231,176 @@ ref struct Maze
         return end.Score;
     }
 
-    public readonly Dictionary<Cheat, int> GetCheatDeltas(MoveNode start, MoveNode end)
+    public readonly Dictionary<Cheat, int> GetCheatDeltas(MoveNode start, MoveNode end, int cheatTime)
     {
         if (!_tiles.TryGet(start.X, start.Y, out _))
             throw new InvalidOperationException();
 
+        var cheatDeltas = new Dictionary<Cheat, int>();
+        var i = 0;
         using var mainPath = GetPath(end);
+        var visited = new Dictionary<VisitedCheat, Dictionary<Position, int>>();
         foreach (var node in mainPath.Span[..^1])
         {
+            //if (cheatTime > 2)
+            //    Console.WriteLine($"Processing node {i}");
+
             if (!_tiles.TryGetIndex(node.X, node.Y, out var index))
                 throw new InvalidOperationException();
 
             var direction = node.Direction;
             var position = node.Position;
             var cheatStart = position.Move(direction, 1);
-            var cheatEnd = position.Move(direction, 2);
-            if (_tiles.TryGet(cheatStart.X, cheatStart.Y, out var s) && s == Wall
-                && _tiles.TryGet(cheatEnd.X, cheatEnd.Y, out var e) && e != Wall)
+            if (_tiles.TryGet(cheatStart.X, cheatStart.Y, out var s) && s == Wall)
             {
-                var cheat = new Cheat(cheatStart, cheatEnd);
-                var cheatScore = node.Score + 2;
-                var delta = cheatScore - _positionScores[cheatEnd];
-                if (delta < 0)
-                    _cheatDeltas.Add(cheat, delta);
+                var cheatNode = node.CreateCheat(in cheatStart, direction);
+                GetCheatDeltas(cheatNode, in cheatStart, cheatTime - 1, cheatDeltas, visited);
             }
 
             var leftDirection = direction.TurnLeft();
             cheatStart = position.Move(leftDirection, 1);
-            cheatEnd = position.Move(leftDirection, 2);
-            if (_tiles.TryGet(cheatStart.X, cheatStart.Y, out s) && s == Wall
-                && _tiles.TryGet(cheatEnd.X, cheatEnd.Y, out e) && e != Wall)
+            if (_tiles.TryGet(cheatStart.X, cheatStart.Y, out s) && s == Wall)
             {
-                var cheat = new Cheat(cheatStart, cheatEnd);
-                var cheatScore = node.Score + 2;
-                var delta = cheatScore - _positionScores[cheatEnd];
-                if (delta < 0)
-                    _cheatDeltas.Add(cheat, delta);
+                var cheatNode = node.CreateCheat(in cheatStart, leftDirection);
+                GetCheatDeltas(cheatNode, in cheatStart, cheatTime - 1, cheatDeltas, visited);
             }
 
             var rightDirection = direction.TurnRight();
             cheatStart = position.Move(rightDirection, 1);
-            cheatEnd = position.Move(rightDirection, 2);
-            if (_tiles.TryGet(cheatStart.X, cheatStart.Y, out s) && s == Wall
-                && _tiles.TryGet(cheatEnd.X, cheatEnd.Y, out e) && e != Wall)
+            if (_tiles.TryGet(cheatStart.X, cheatStart.Y, out s) && s == Wall)
             {
-                var cheat = new Cheat(cheatStart, cheatEnd);
-                var cheatScore = node.Score + 2;
-                var delta = cheatScore - _positionScores[cheatEnd];
-                if (delta < 0)
-                    _cheatDeltas.Add(cheat, delta);
+                var cheatNode = node.CreateCheat(in cheatStart, rightDirection);
+                GetCheatDeltas(cheatNode, in cheatStart, cheatTime - 1, cheatDeltas, visited);
             }
 
             if (ReferenceEquals(node, start))
             {
-                var reverse = direction.TurnRight().TurnRight();
+                var reverse = rightDirection.TurnRight();
                 cheatStart = position.Move(reverse, 1);
-                cheatEnd = position.Move(reverse, 2);
-                if (_tiles.TryGet(cheatStart.X, cheatStart.Y, out s) && s == Wall
-                    && _tiles.TryGet(cheatEnd.X, cheatEnd.Y, out e) && e != Wall)
+                if (_tiles.TryGet(cheatStart.X, cheatStart.Y, out s) && s == Wall)
                 {
-                    var cheat = new Cheat(cheatStart, cheatEnd);
-                    var cheatScore = node.Score + 2;
-                    var delta = cheatScore - _positionScores[cheatEnd];
-                    if (delta < 0)
-                        _cheatDeltas.Add(cheat, delta);
+                    var cheatNode = node.CreateCheat(in cheatStart, reverse);
+                    GetCheatDeltas(cheatNode, in cheatStart, cheatTime - 1, cheatDeltas, visited);
                 }
             }
+
+            i++;
         }
 
-        return _cheatDeltas;
+        return cheatDeltas;
+    }
+
+    public readonly void GetCheatDeltas(
+        MoveNode node, in Position cheatStart, int cheatTime, Dictionary<Cheat, int> cheatDeltas,
+        Dictionary<VisitedCheat, Dictionary<Position, int>> visited)
+    {
+        if (!_tiles.TryGetIndex(node.X, node.Y, out var index))
+            return;
+
+        var key = new VisitedCheat(node.Position, cheatTime);
+        if (visited.TryGetValue(key, out var endLengths))
+        {
+            foreach (var (end, length) in endLengths)
+            {
+                var cheat = new Cheat(cheatStart, end);
+                var cheatScore = node.Score + length;
+                var delta = cheatScore - _positionScores[end];
+                if (delta < 0 && (!cheatDeltas.TryGetValue(cheat, out var oldDelta) || delta < oldDelta))
+                    cheatDeltas[cheat] = delta;
+            }
+
+            return;
+        }
+
+        if (_tiles.Span[index] != Wall)
+        {
+            var cheat = new Cheat(cheatStart, node.Position);
+            var delta = node.Score - _positionScores[node.Position];
+            if (delta < 0 && (!cheatDeltas.TryGetValue(cheat, out var oldDelta) || delta < oldDelta))
+                cheatDeltas[cheat] = delta;
+
+            AddVisited(node, visited);
+
+            if (cheatTime == 0)
+                return;
+        }
+
+        if (cheatTime == 0)
+        {
+            AddVisited(node, visited);
+            return;
+        }
+
+        var direction = node.Direction;
+        var position = node.Position;
+        var next = position.Move(direction, 1);
+        if (_tiles.TryGetIndex(next.X, next.Y, out _) && !node.IsRepeated(in next))
+        {
+            var cheatNode = node.CreateCheat(in next, direction);
+            GetCheatDeltas(cheatNode, in cheatStart, cheatTime - 1, cheatDeltas, visited);
+        }
+
+        var leftDirection = direction.TurnLeft();
+        next = position.Move(leftDirection, 1);
+        if (_tiles.TryGetIndex(next.X, next.Y, out _) && !node.IsRepeated(in next))
+        {
+            var cheatNode = node.CreateCheat(in next, leftDirection);
+            GetCheatDeltas(cheatNode, in cheatStart, cheatTime - 1, cheatDeltas, visited);
+        }
+
+        var rightDirection = direction.TurnRight();
+        next = position.Move(rightDirection, 1);
+        if (_tiles.TryGetIndex(next.X, next.Y, out _) && !node.IsRepeated(in next))
+        {
+            var cheatNode = node.CreateCheat(in next, rightDirection);
+            GetCheatDeltas(cheatNode, in cheatStart, cheatTime - 1, cheatDeltas, visited);
+        }
+
+        if (ReferenceEquals(node, node))
+        {
+            var reverse = rightDirection.TurnRight();
+            next = position.Move(reverse, 1);
+            if (_tiles.TryGetIndex(next.X, next.Y, out _) && !node.IsRepeated(in next))
+            {
+                var cheatNode = node.CreateCheat(in next, reverse);
+                GetCheatDeltas(cheatNode, in cheatStart, cheatTime - 1, cheatDeltas, visited);
+            }
+        }
+    }
+
+    // this seems like it could be more efficient and more elegant
+    private readonly void AddVisited(MoveNode end, Dictionary<VisitedCheat, Dictionary<Position, int>> visited)
+    {
+        var endIsWall = _tiles.TryGet(end.X, end.Y, out var tile) && tile == Wall;
+        var node = end;
+        while (node?.HasCheat is true)
+        {
+            var length = end.Score - node.Score;
+            var key = new VisitedCheat(node.Position, length);
+            if (endIsWall)
+            {
+                if (!visited.ContainsKey(key))
+                    visited[key] = [];
+            }
+            else if (visited.TryGetValue(key, out var endLengths))
+            {
+                if (endLengths.TryGetValue(end.Position, out var oldLength))
+                {
+                    if (length < oldLength)
+                        endLengths[end.Position] = length;
+                }
+                else
+                {
+                    endLengths[end.Position] = length;
+                }
+            }
+            else
+            {
+                visited[key] = new() { { end.Position, length } };
+            }
+
+            node = node.Parent;
+        }
     }
 
     public static PoolableList<MoveNode> GetPath(MoveNode end)
@@ -504,9 +582,6 @@ record MoveNode(MoveNode? Parent, byte X, byte Y, Direction Direction, bool HasC
 
     public MoveNode CreateCheat(in Position position, Direction direction)
     {
-        if (HasCheat)
-            throw new ArgumentException("Already cheated");
-
         var distance = position.X == X ? Math.Abs(position.Y - Y) : Math.Abs(position.X - X);
         return new(this, (byte)position.X, (byte)position.Y, direction, HasCheat: true, Score + distance);
     }
@@ -527,6 +602,7 @@ record MoveNode(MoveNode? Parent, byte X, byte Y, Direction Direction, bool HasC
 }
 
 record struct Cheat(Position Start, Position End);
+record struct VisitedCheat(Position Position, int CheatTime);
 
 enum Direction : byte
 {
