@@ -1,5 +1,4 @@
 ﻿using System.Buffers.Text;
-using Core;
 
 var start = TimeProvider.System.GetTimestamp();
 
@@ -28,13 +27,12 @@ var bytes = useExample switch
 const int NumRounds = 2_000;
 
 var j = 0;
-var total1 = 0L;
 var bestSequence = default(ChangeSequence);
-var monkeySeenSequences = new HashSet<ChangeSequence>();
-var sequenceBananas = new Dictionary<ChangeSequence, long>();
+var monkeySeenSequences = new HashSet<ChangeSequence>(NumRounds);
+Span<int> priceChanges = new int[NumRounds];
+var sequenceBananas = new Dictionary<ChangeSequence, long>(NumRounds);
+var total1 = 0L;
 var totalBananas = 0L;
-using var monkeyPrices = new PoolableList<int[]>();
-using var monkeyPriceChanges = new PoolableList<int[]>();
 foreach (var range in bytes.Split("\r\n"u8))
 {
     var line = bytes[range];
@@ -43,45 +41,39 @@ foreach (var range in bytes.Split("\r\n"u8))
 
     Utf8Parser.TryParse(line, out long initialSecretNumber, out _);
 
-    var pricesArray = new int[2_001];
-    var priceChangesArray = new int[2_001];
-    var prices = pricesArray.AsSpan();
-    var priceChanges = priceChangesArray.AsSpan();
-    prices[0] = (int)(initialSecretNumber % 10);
-    priceChanges[0] = 0;
+    var previousPrice = (int)(initialSecretNumber % 10);
     var secretNumber = initialSecretNumber;
     for (var i = 0; i < NumRounds; i++)
     {
         secretNumber = Next(secretNumber);
-        var price = prices[i + 1] = (int)(secretNumber % 10);
-        priceChanges[i + 1] = price - prices[i];
+        var price = (int)(secretNumber % 10);
+        priceChanges[i] = price - previousPrice;
+        previousPrice = price;
 
         if (i >= 3)
         {
-            var sequence = priceChanges.Slice(i - 2, 4);
-            var key = ChangeSequence.FromSpan(sequence);
-            if (!monkeySeenSequences.Add(key))
+            var sequence = ChangeSequence.FromSpan(priceChanges.Slice(i - 3, 4));
+            if (!monkeySeenSequences.Add(sequence))
                 continue;
 
-            if (sequenceBananas.TryGetValue(key, out var bananas))
+            if (sequenceBananas.TryGetValue(sequence, out var bananas))
             {
-                sequenceBananas[key] = bananas + price;
+                sequenceBananas[sequence] = bananas + price;
                 if (bananas + price > totalBananas)
                 {
-                    bestSequence = key;
+                    bestSequence = sequence;
                     totalBananas = bananas + price;
                 }
             }
             else
             {
-                sequenceBananas.Add(key, price);
+                sequenceBananas.Add(sequence, price);
             }
         }
     }
 
-    monkeyPrices.Add(pricesArray);
-    monkeyPriceChanges.Add(priceChangesArray);
     monkeySeenSequences.Clear();
+    priceChanges.Clear();
 
     total1 += secretNumber;
     j++;
