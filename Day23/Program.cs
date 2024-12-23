@@ -154,6 +154,7 @@ static int GetPassword(Span<Computer> computers, out string password)
     var bestLength = 0;
     var array = ArrayPool<string>.Shared.Rent(computers.Length);
     var candidates = array.AsSpan();
+    var connections = new HashSet<string>();
     foreach (var first in computers)
     {
         var i = 0;
@@ -161,7 +162,10 @@ static int GetPassword(Span<Computer> computers, out string password)
 
         foreach (var second in first.Connections)
         {
-            var connections = second.Connections.Select(c => c.Name).ToHashSet();
+            connections.Clear();
+            foreach (var connection in second.Connections)
+                connections.Add(connection.Name);
+
             var isConnected = true;
             foreach (var candidate in candidates[..i])
                 isConnected &= connections.Contains(candidate);
