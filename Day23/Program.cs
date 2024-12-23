@@ -1,4 +1,4 @@
-﻿using System;
+﻿using System.Buffers;
 using System.Diagnostics;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
@@ -123,10 +123,12 @@ foreach (var computer in computers.Values)
 //    Console.WriteLine(tSet);
 
 var total1 = setsOfThreeT.Count;
+var passwordLength = GetPassword([.. computers.Values], out var password);
 
 var elapsed = TimeProvider.System.GetElapsedTime(start);
 
 Console.WriteLine($"Part 1: {total1}");
+Console.WriteLine($"Part 2: {password} ({passwordLength})");
 Console.WriteLine($"Processed {bytes.Length:N0} input bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
 static bool AnyStartsWithT(ReadOnlySpan<string?> names)
@@ -136,6 +138,54 @@ static bool AnyStartsWithT(ReadOnlySpan<string?> names)
             return true;
 
     return false;
+}
+
+static int GetPassword(Span<Computer> computers, out string password)
+{
+    computers.Sort((x, y) =>
+    {
+        var connectionsComparison = -x.Connections.Count.CompareTo(y.Connections.Count);
+        return connectionsComparison != 0
+            ? connectionsComparison
+            : x.Name.CompareTo(y.Name);
+    });
+
+    var bestCandidates = new HashSet<string>();
+    var bestLength = 0;
+    var array = ArrayPool<string>.Shared.Rent(computers.Length);
+    var candidates = array.AsSpan();
+    foreach (var first in computers)
+    {
+        var i = 0;
+        candidates[i++] = first.Name;
+
+        foreach (var second in first.Connections)
+        {
+            var connections = second.Connections.Select(c => c.Name).ToHashSet();
+            var isConnected = true;
+            foreach (var candidate in candidates[..i])
+                isConnected &= connections.Contains(candidate);
+
+            if (isConnected)
+                candidates[i++] = second.Name;
+        }
+
+        if (i > bestLength)
+        {
+            bestCandidates.Clear();
+            foreach (var candidate in candidates[..i])
+                bestCandidates.Add(candidate);
+
+            bestLength = i;
+        }
+
+        candidates.Clear();
+    }
+
+    ArrayPool<string>.Shared.Return(array);
+
+    password = string.Join(',', bestCandidates.Order());
+    return bestLength;
 }
 
 [DebuggerDisplay("{Name} [{Connections.Count}]")]
