@@ -1,0 +1,111 @@
+# Part 2 output and notes
+
+## Output
+
+Comparing add x + y to z, bit by bit:
+
+z12: Expected: 0, Actual: 1
+z13: Expected: 0, Actual: 1
+z14: Expected: 0, Actual: 1
+z15: Expected: 1, Actual: 0
+z26: Expected: 1, Actual: 0
+z27: Expected: 1, Actual: 0
+z28: Expected: 1, Actual: 0
+z29: Expected: 1, Actual: 0
+z30: Expected: 1, Actual: 0
+z31: Expected: 0, Actual: 1
+z32: Expected: 1, Actual: 0
+z33: Expected: 1, Actual: 0
+z34: Expected: 0, Actual: 1
+z36: Expected: 1, Actual: 0
+z37: Expected: 1, Actual: 0
+z38: Expected: 1, Actual: 0
+z39: Expected: 0, Actual: 1
+
+Invalid adder states:
+
+Invalid adder 12:
+  XOR 2 is invalid: Gate { Input1 = nhb, Operator = Xor, Input2 = cdq, Output = kth }
+  OR 5 is invalid: Gate { Input1 = psw, Operator = Or, Input2 = nng, Output = z12 }
+  A:x12-\_Xor-----(nhb/nhb)--\_Xor--(kth)--SUM
+  B:y12-/             |      /
+  C:cdq-----------------cdq-+
+                      |      \---cdq-\_And--(nng/nng)--\
+                      \----------nhb-/                  |Or--(z12/z12)--Cout
+                               A:x12-\_And--(psw/psw)--/
+                               B:y12-/
+Found swaps: z12, kth
+
+Invalid adder 26:
+  XOR 2 is invalid: Gate { Input1 = dfp, Operator = Xor, Input2 = mbg, Output = gsd }
+  AND 4 is invalid: Gate { Input1 = x26, Operator = And, Input2 = y26, Output = z26 }
+  OR 5 is invalid: Gate { Input1 = gsd, Operator = Or, Input2 = kbg, Output = cmf }
+  A:x26-\_Xor-----(dfp/dfp)--\_Xor--(gsd)--SUM
+  B:y26-/             |      /
+  C:mbg-----------------mbg-+
+                      |      \---mbg-\_And--(kbg/kbg)--\
+                      \----------dfp-/                  |Or--(cmf/cmf)--Cout
+                               A:x26-\_And--(z26/gsd)--/
+                               B:y26-/
+Found swaps: z26, gsd
+
+Invalid adder 32:
+  XOR 2 is invalid: Gate { Input1 = vtg, Operator = Xor, Input2 = bkh, Output = tbt }
+  AND 3 is invalid: Gate { Input1 = vtg, Operator = And, Input2 = bkh, Output = z32 }
+  OR 5 is invalid: Gate { Input1 = tbt, Operator = Or, Input2 = skt, Output = nwm }
+  A:x32-\_Xor-----(bkh/bkh)--\_Xor--(tbt)--SUM
+  B:y32-/             |      /
+  C:vtg-----------------vtg-+
+                      |      \---vtg-\_And--(z32/tbt)--\
+                      \----------bkh-/                  |Or--(nwm/nwm)--Cout
+                               A:x32-\_And--(skt/skt)--/
+                               B:y32-/
+Found swaps: z32, tbt
+
+Invalid adder 36:
+  XOR 1 is invalid: Gate { Input1 = y36, Operator = Xor, Input2 = x36, Output = vpm }
+  XOR 2 is invalid: Gate { Input1 = htb, Operator = Xor, Input2 = qnf, Output = z36 }
+  AND 3 is invalid: Gate { Input1 = htb, Operator = And, Input2 = qnf, Output = thg }
+  AND 4 is invalid: Gate { Input1 = y36, Operator = And, Input2 = x36, Output = qnf }
+  OR 5 is invalid: Gate { Input1 = thg, Operator = Or, Input2 = vpm, Output = wkk }
+  A:x36-\_Xor-----(vpm/htb)--\_Xor--(z36)--SUM
+  B:y36-/             |      /
+  C:qnf-----------------qnf-+
+                      |      \---qnf-\_And--(thg/thg)--\
+                      \----------htb-/                  |Or--(wkk/wkk)--Cout
+                               A:x36-\_And--(qnf/vpm)--/
+                               B:y36-/
+Found swaps: qnf, vpm
+
+Invalid adder 44:
+  OR 5 is invalid: Gate { Input1 = vdn, Operator = Or, Input2 = qtn, Output = z45 }
+  A:x44-\_Xor-----(nnt/nnt)--\_Xor--(z44)--SUM
+  B:y44-/             |      /
+  C:jnj-----------------jnj-+
+                      |      \---jnj-\_And--(qtn/qtn)--\
+                      \----------nnt-/                  |Or--(z45/z45)
+                               A:y44-\_And--(vdn/vdn)--/
+                               B:x44-/
+
+
+## Notes:
+
+Based on bits inconsistent with add bits, it seems there's a bad wire near z11-z12, z25-z26, maybe z36, and somewhere
+else in the 20s-30s?
+
+swaps:
+- adder 12: kth and z12
+- adder 26: gsd and z26?
+- adder 32: tbt and z32?
+- adder 36 state is very broken
+    - bbb OR cnp -> htb (carry from 35)
+    - 1: y36 XOR x36 -> vpm
+    - 2: htb XOR qnf -> z36
+    - 3: htb AND qnf -> thg
+    - 4: y36 AND x36 -> qnf
+    - 5: thg OR vpm -> wkk
+    - swap: vpm and qnf
+
+adder 44 is ok (z45 is the last one so the last carry is ok)
+
+part 2 swaps: gsd,kth,qnf,tbt,vpm,z12,z26,z32
