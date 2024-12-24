@@ -75,6 +75,8 @@ var bytes = useExample switch
     _ => File.ReadAllBytes("input.txt").AsSpan()
 };
 
+const int MaxBits = sizeof(ulong) * 8;
+
 var OutputSeparator = " -> "u8;
 var WireValueSeparator = ": "u8;
 
@@ -157,6 +159,7 @@ while (gates1.TryDequeue(out var gate))
         gates1.Enqueue(gate);
 }
 
+var numBits = 0;
 ulong total1 = 0UL;
 foreach (var (name, value) in values1)
 {
@@ -164,9 +167,10 @@ foreach (var (name, value) in values1)
         continue;
 
     var index = int.Parse(name.AsSpan(1));
-    if (index >= sizeof(long) * 8)
+    if (index >= MaxBits)
         throw new InvalidDataException();
 
+    numBits = Math.Max(numBits, index);
     total1 |= (ulong)value << index;
 }
 
@@ -177,7 +181,7 @@ var z = 0UL;
 Span<byte> xName = stackalloc byte[3];
 Span<byte> yName = stackalloc byte[3];
 Span<byte> zName = stackalloc byte[3];
-for (var i = 0; i < 64; i++)
+for (var i = 0; i < numBits; i++)
 {
     Format('x', i, xName);
     Format('y', i, yName);
@@ -196,35 +200,95 @@ for (var i = 0; i < 64; i++)
         Console.WriteLine($"{Encoding.UTF8.GetString(zName)}: Expected: {zBit}, Actual: {zBad}");
 }
 
+Console.WriteLine();
+
 var gatesArray = gates.Span.ToArray();
 var gatesByInput1 = gatesArray.ToLookup(g => g.Input1);
 var gatesByInput2 = gatesArray.ToLookup(g => g.Input2);
 var gatesByOutput = gatesArray.ToDictionary(g => g.Output);
-var fullAdders = new PoolableList<FullAdder>();
-for (var i = 1; i < 45; i++)
+using var fullAdders = new PoolableList<FullAdder>();
+using var swapList = new PoolableList<string?>();
+for (var i = 1; i < numBits; i++)
 {
     Format('x', i, xName);
     Format('y', i, yName);
     Format('z', i, zName);
     var xGates = gatesByInput1[Encoding.UTF8.GetString(xName)];
     var yGates = gatesByInput1[Encoding.UTF8.GetString(yName)];
+    if (!xGates.Any() && !yGates.Any())
+        break;
+
+    var zGate = gatesByOutput[Encoding.UTF8.GetString(zName)];
     var gate1 = xGates.Union(yGates).FirstOrDefault(g => g.Operator == Operator.Xor);
     var next1Gates = gatesByInput1[gate1.Output].Union(gatesByInput2[gate1.Output]);
     var gate2 = next1Gates.FirstOrDefault(g => g.Operator == Operator.Xor);
     var gate3 = next1Gates.FirstOrDefault(g => g.Operator == Operator.And);
+    if (gate2 == default)
+    {
+        gate2 = zGate;
+        if (gate3 == default)
+            gate3 = gatesByInput1[zGate.Input1].Union(gatesByInput1[zGate.Input2]).FirstOrDefault(g => g.Operator == Operator.And);
+    }
+
     var gate4 = xGates.Union(yGates).FirstOrDefault(g => g.Operator == Operator.And);
-    var gate5 = gatesByInput1[gate3.Output].Union(gatesByInput1[gate4.Output]).FirstOrDefault();
+    var gate5 = gatesByInput1[gate3.Output].Union(gatesByInput1[gate4.Output]).FirstOrDefault(g => g.Operator == Operator.Or);
+    if (gate5 == default)
+        gate5 = gatesByInput2[gate3.Output].Union(gatesByInput2[gate4.Output]).FirstOrDefault(g => g.Operator == Operator.Or);
 
     var fullAdder = new FullAdder(gate1, gate2, gate3, gate4, gate5);
-    if (!fullAdder.IsValid(out var message))
-        Console.WriteLine($"Invalid adder {i}:\r\n  {message}\r\n{fullAdder}\r\n");
-
     fullAdders.Add(fullAdder);
+
+    var isLast = i == numBits - 1;
+    if (fullAdder.IsValid(isLast, out var message, out var invalidGates))
+        continue;
+
+    Console.WriteLine($"Invalid adder {i}:\r\n  {message}\r\n{fullAdder}");
+    var invalidCollection = fullAdder.GetGates(invalidGates);
+    if (invalidCollection.Length >= 2)
+    {
+        var foundSwap = false;
+        for (var j = 0; j < invalidCollection.Length - 1; j++)
+        {
+            for (var k = 1; k < invalidCollection.Length; k++)
+            {
+                Span<Gate> temp = [gate1, gate2, gate3, gate4, gate5];
+                var bad1 = invalidCollection[j];
+                var bad2 = invalidCollection[k];
+                var index1 = temp.IndexOf(bad1);
+                var index2 = temp.IndexOf(bad2);
+                if (index1 >= 0 && index2 >= 0)
+                {
+                    var swap1 = bad1 with { Output = bad2.Output };
+                    var swap2 = bad2 with { Output = bad1.Output };
+                    temp[index1] = swap1;
+                    temp[index2] = swap2;
+                    var swapAdder = new FullAdder(temp[0], temp[1], temp[2], temp[3], temp[4]);
+                    if (swapAdder.IsValid(isLast, out _, out _))
+                    {
+                        Console.WriteLine($"Found swaps: {swap1.Output}, {swap2.Output}");
+                        swapList.Add(swap1.Output);
+                        swapList.Add(swap2.Output);
+                        foundSwap = true;
+                        break;
+                    }
+                }
+            }
+
+            if (foundSwap)
+                break;
+        }
+    }
+
+    Console.WriteLine();
 }
+
+var swaps = swapList.Span;
+swaps.Sort();
 
 var elapsed = TimeProvider.System.GetElapsedTime(start);
 
 Console.WriteLine($"Part 1: {total1}");
+Console.WriteLine($"Part 2: {string.Join(',', swaps)} {(swaps.Length == 8 ? "" : "(incomplete)")}");
 Console.WriteLine($"Processed {bytes.Length:N0} input bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
 static void Format(char prefix, int value, Span<byte> utf8Bytes)
@@ -281,35 +345,58 @@ record struct Gate(string Input1, Operator Operator, string Input2, string Outpu
 record struct FullAdder(Gate Xor1, Gate Xor2, Gate And3, Gate And4, Gate Or5)
 {
     public readonly string CarryIn
-        => Xor2.Input1 != Xor1.Output ? Xor2.Input1 : Xor2.Input2;
+        => Xor2.Input2 == Xor1.Output ? Xor2.Input1 : Xor2.Input2;
 
     public readonly string CarryOut => Or5.Output;
 
-    public readonly bool IsValid(out string message)
+    public readonly bool IsValid(bool isLast, out string message, out FullAdderGates invalidGates)
     {
         var gate1IsValid = Xor1.Operator == Operator.Xor
-            && InputStartsWith(Xor1, 'x') && InputStartsWith(Xor1, 'y');
+            && InputStartsWith(Xor1, 'x') && InputStartsWith(Xor1, 'y')
+            && HasInput(Xor2, Xor1.Output);
         var gate2IsValid = Xor2.Operator == Operator.Xor && Xor2.Output.StartsWith('z')
             && HasInput(Xor2, Xor1.Output);
         var gate3IsValid = And3.Operator == Operator.And && HasInput(And3, Xor1.Output)
-            && !InputStartsWith(And3, 'x') && !InputStartsWith(And3, 'y');
+            && !InputStartsWith(And3, 'x') && !InputStartsWith(And3, 'y')
+            && !And3.Output.StartsWith('z');
         var gate4IsValid = And4.Operator == Operator.And
-            && InputStartsWith(And4, 'x') && InputStartsWith(And4, 'y');
+            && InputStartsWith(And4, 'x') && InputStartsWith(And4, 'y')
+            && HasInput(Or5, And4.Output) && !And4.Output.StartsWith('z');
         var gate5IsValid = Or5.Operator == Operator.Or
             && HasInput(Or5, And3.Output) && HasInput(Or5, And4.Output)
-            && !Or5.Output.StartsWith('z');
+            && (isLast || !Or5.Output.StartsWith('z'));
 
+        invalidGates = FullAdderGates.None;
         var messages = new List<string>();
         if (!gate1IsValid)
+        {
             messages.Add($"XOR 1 is invalid: {Xor1}");
+            invalidGates |= FullAdderGates.Xor1;
+        }
+
         if (!gate2IsValid)
+        {
             messages.Add($"XOR 2 is invalid: {Xor2}");
+            invalidGates |= FullAdderGates.Xor2;
+        }
+
         if (!gate3IsValid)
+        {
             messages.Add($"AND 3 is invalid: {And3}");
+            invalidGates |= FullAdderGates.And3;
+        }
+
         if (!gate4IsValid)
+        {
             messages.Add($"AND 4 is invalid: {And4}");
+            invalidGates |= FullAdderGates.And4;
+        }
+
         if (!gate5IsValid)
+        {
             messages.Add($"OR 5 is invalid: {Or5}");
+            invalidGates |= FullAdderGates.Or5;
+        }
 
         message = string.Join("\r\n  ", messages);
 
@@ -336,16 +423,52 @@ record struct FullAdder(Gate Xor1, Gate Xor2, Gate And3, Gate And4, Gate Or5)
         var op5 = Or5.Operator;
         string cin = CarryIn, cou = CarryOut;
 
+        // attempt to align inputs
+        if (i11.StartsWith('y'))
+            (i11, i12) = (i12, i11);
+        if (i41.StartsWith('y'))
+            (i41, i42) = (i42, i41);
+        if (i22 == ou1)
+            (i21, i22) = (i22, i21);
+        if (i31 == ou1 || i32 == i22)
+            (i31, i32) = (i32, i31);
+        if (i51 == ou4 || i52 == ou3)
+            (i51, i52) = (i52, i51);
+
         // note that this diagram usually lines up better in real output because the braces affect alignment
         return $"""
-              A:{i11}-\_{op1}---------+--{i21}-\_{op2}--{ou2}--SUM
-              B:{i12}-/   ({ou1})     |  {i22}-/
-              C:{cin}---------------------+              ({ou3})
-                                  |      \---{i31}-\_{op3}--{i51}-\
-                                  \----------{i32}-/           |{op5}--{cou}
-                                           A:{i41}-\_{op4}--{i52}-/    ({o5})
-                                           B:{i42}-/     ({ou4})
+              A:{i11}-\_{op1}-----({ou1}/{i21})--\_{op2}--({ou2})--SUM
+              B:{i12}-/             |      /
+              C:{cin}-----------------{i22}-+
+                                  |      \---{i31}-\_{op3}--({ou3}/{i51})--\
+                                  \----------{i32}-/                  |{op5}--({o5}/{cou})--Cout
+                                           A:{i41}-\_{op4}--({ou4}/{i52})--/
+                                           B:{i42}-/
             """;
+    }
+
+    public readonly Gate[] GetGates(FullAdderGates gates)
+    {
+        if (gates == FullAdderGates.None)
+            return [];
+
+        var result = new List<Gate>();
+        if ((gates & FullAdderGates.Xor1) != 0 && !string.IsNullOrEmpty(Xor1.Output))
+            result.Add(Xor1);
+
+        if ((gates & FullAdderGates.Xor2) != 0 && !string.IsNullOrEmpty(Xor2.Output))
+            result.Add(Xor2);
+
+        if ((gates & FullAdderGates.And3) != 0 && !string.IsNullOrEmpty(And3.Output))
+            result.Add(And3);
+
+        if ((gates & FullAdderGates.And4) != 0 && !string.IsNullOrEmpty(And4.Output))
+            result.Add(And4);
+
+        if ((gates & FullAdderGates.Or5) != 0 && !string.IsNullOrEmpty(Or5.Output))
+            result.Add(Or5);
+
+        return result.ToArray();
     }
 }
 
@@ -355,4 +478,15 @@ enum Operator
     And,
     Or,
     Xor
+}
+
+[Flags]
+enum FullAdderGates : byte
+{
+    None = 0,
+    Xor1 = 1 << 0,
+    Xor2 = 1 << 1,
+    And3 = 1 << 2,
+    And4 = 1 << 3,
+    Or5 = 1 << 4
 }
