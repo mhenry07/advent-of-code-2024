@@ -70,7 +70,6 @@ for (var i = 0; i < input.SimulationBytes; i++)
 
 var total1 = AStar(in rowOrder1, in start, in goal);
 
-// first attempt: 56,68 (wrong answer)
 var blockPosition2 = default(Position);
 Span<byte> rows2 = rows1.ToArray();
 var rowOrder2 = new RowOrderSpan<byte>(rows2, input.Width, input.Height);
@@ -80,7 +79,7 @@ for (var i = input.SimulationBytes; i < fallingSpan.Length; i++)
     rowOrder2.GetRef(position.X, position.Y) = (byte)'#';
 
     var steps = AStar(in rowOrder2, in start, in goal);
-    if (steps == -1)
+    if (!steps.HasValue)
     {
         Console.WriteLine($"blocked by fallingSpan[{i}] = {position.X},{position.Y}");
         blockPosition2 = position;
@@ -95,13 +94,15 @@ Console.WriteLine($"Part 2: {blockPosition2.X},{blockPosition2.Y}");
 Console.WriteLine($"Processed {input.Bytes.Length:N0} input bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
 // adapted from https://en.wikipedia.org/wiki/A*_search_algorithm
-static int AStar(in RowOrderSpan<byte> rowOrder, in Position start, in Position goal)
+static int? AStar(in RowOrderSpan<byte> rowOrder, in Position start, in Position goal)
 {
     var width = rowOrder.Width;
     var height = rowOrder.Height;
     var fStart = Heuristic(in start, in goal);
+    var startNode = MoveNode.Start(start.X, start.Y);
     rowOrder.TryGetIndex(start.X, start.Y, out var startIndex);
-    var open = new PriorityQueue<MoveNode, int>([(MoveNode.Start(start.X, start.Y), fStart)]);
+    var open = new PriorityQueue<MoveNode, int>([(startNode, fStart)]);
+    var openSet = new HashSet<Position>([start]);
 
     // cost of cheapest known path from start to n
     var gScores = new RowOrderSpan<int>(new int[width * height], width, height);
@@ -118,6 +119,7 @@ static int AStar(in RowOrderSpan<byte> rowOrder, in Position start, in Position 
     Span<MoveNode> neighbors = new MoveNode[4];
     while (open.TryDequeue(out var current, out _))
     {
+        openSet.Remove(current.Position);
         if (current.Position == goal)
         {
             fScores.TryGet(current.X, current.Y, out int fScore);
@@ -138,13 +140,13 @@ static int AStar(in RowOrderSpan<byte> rowOrder, in Position start, in Position 
                 gSpan[nIndex] = gTentative;
                 fSpan[nIndex] = gTentative + h;
 
-                if (!open.UnorderedItems.Any(x => x.Element.Position == neighbor.Position))
+                if (openSet.Add(neighbor.Position))
                     open.Enqueue(neighbor, gTentative + h);
             }
         }
     }
 
-    return -1;
+    return null;
 }
 
 // using taxi cab distance
