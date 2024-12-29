@@ -58,22 +58,40 @@ foreach (var range in MemoryExtensions.Split(inputBytes, "\r\n"u8))
     }
 }
 
-Span<byte> rows = new byte[input.Width * input.Height];
-rows.Fill((byte)'.');
-var rowOrder = new RowOrderSpan<byte>(rows, input.Width, input.Height);
+Span<byte> rows1 = new byte[input.Width * input.Height];
+rows1.Fill((byte)'.');
+var rowOrder1 = new RowOrderSpan<byte>(rows1, input.Width, input.Height);
 var fallingSpan = fallingBytes.Span;
 for (var i = 0; i < input.SimulationBytes; i++)
 {
     var position = fallingSpan[i];
-    if (rowOrder.TryGetIndex(position.X, position.Y, out var index))
-        rowOrder.Span[index] = (byte)'#';
+    rowOrder1.GetRef(position.X, position.Y) = (byte)'#';
 }
 
-var total1 = AStar(in rowOrder, in start, in goal);
+var total1 = AStar(in rowOrder1, in start, in goal);
+
+// first attempt: 56,68 (wrong answer)
+var blockPosition2 = default(Position);
+Span<byte> rows2 = rows1.ToArray();
+var rowOrder2 = new RowOrderSpan<byte>(rows2, input.Width, input.Height);
+for (var i = input.SimulationBytes; i < fallingSpan.Length; i++)
+{
+    var position = fallingSpan[i];
+    rowOrder2.GetRef(position.X, position.Y) = (byte)'#';
+
+    var steps = AStar(in rowOrder2, in start, in goal);
+    if (steps == -1)
+    {
+        Console.WriteLine($"blocked by fallingSpan[{i}] = {position.X},{position.Y}");
+        blockPosition2 = position;
+        break;
+    }
+}
 
 var elapsed = TimeProvider.System.GetElapsedTime(startTimestamp);
 
 Console.WriteLine($"Part 1: {total1}");
+Console.WriteLine($"Part 2: {blockPosition2.X},{blockPosition2.Y}");
 Console.WriteLine($"Processed {input.Bytes.Length:N0} input bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
 // adapted from https://en.wikipedia.org/wiki/A*_search_algorithm
@@ -103,25 +121,25 @@ static int AStar(in RowOrderSpan<byte> rowOrder, in Position start, in Position 
         if (current.Position == goal)
         {
             fScores.TryGet(current.X, current.Y, out int fScore);
-            Console.WriteLine($"fScores@({current.X},{current.Y}): {fScore}");
+            //Console.WriteLine($"fScores@({current.X},{current.Y}): {fScore}");
             return fScore;
         }
 
         gScores.TryGet(current.X, current.Y, out var gCurrent);
 
         var nLength = current.GetNeighbors(in rowOrder, neighbors);
-        foreach (var n in neighbors[..nLength])
+        foreach (var neighbor in neighbors[..nLength])
         {
-            rowOrder.TryGetIndex(n.X, n.Y, out var nIndex);
+            rowOrder.TryGetIndex(neighbor.X, neighbor.Y, out var nIndex);
             var gTentative = gCurrent + 1;
             if (gTentative < gSpan[nIndex])
             {
-                var h = Heuristic(n.Position, in goal);
+                var h = Heuristic(neighbor.Position, in goal);
                 gSpan[nIndex] = gTentative;
                 fSpan[nIndex] = gTentative + h;
 
-                if (!open.UnorderedItems.Any(x => x.Element.Position == n.Position))
-                    open.Enqueue(n, gTentative + h);
+                if (!open.UnorderedItems.Any(x => x.Element.Position == neighbor.Position))
+                    open.Enqueue(neighbor, gTentative + h);
             }
         }
     }
