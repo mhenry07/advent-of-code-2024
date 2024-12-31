@@ -65,6 +65,7 @@ var elapsed = TimeProvider.System.GetElapsedTime(start);
 Console.WriteLine($"Part 1: {total1}");
 Console.WriteLine($"Processed {bytes.Length:N0} input bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
+// see https://en.wikipedia.org/wiki/Differential_dynamic_programming
 struct ButtonOptimizer
 {
     NumericButtonPresser _presser1;
@@ -83,22 +84,26 @@ struct ButtonOptimizer
     public readonly int GetOptimalTrajectory(ReadOnlySpan<byte> input)
     {
         Span<byte> keyBuffer = stackalloc byte[128];
-        var sequences1 = new PoolableList<PoolableList<KeyNode>>();
-        var sequences2 = new PoolableList<PoolableList<PoolableList<KeyNode>>>();
-        var sequences3 = new PoolableList<PoolableList<PoolableList<PoolableList<KeyNode>>>>();
+        using var sequences1 = new PoolableList<KeyNode>();
+        var sequences2 = new PoolableList<PoolableList<KeyNode>>();
+        var sequences3 = new PoolableList<PoolableList<PoolableList<KeyNode>>>();
         try
         {
             var i = 0;
             var length = 0;
-            GetNumericSequences(_presser1.Position, input, sequences1);
-            GetDirectionalSequences(_presser2.Position, sequences1.Span, sequences2);
-            GetDirectionalSequences(_presser3.Position, sequences2.Span, sequences3);
-            using var trajectory = GetOptimalTrajectory(sequences3.Span);
-            foreach (var leaf in trajectory.Span)
+            foreach (var key in input)
             {
-                i += GetSequenceKeys(leaf, keyBuffer[i..]);
+                GetNumericSequences(_presser1.Position, key, sequences1);
+                GetDirectionalSequences(_presser2.Position, sequences1.Span, sequences2);
+                GetDirectionalSequences(_presser3.Position, sequences2.Span, sequences3);
 
+                var leaf = GetOptimalTrajectory(sequences3.Span);
+                i += GetSequenceKeys(leaf, keyBuffer[i..]);
                 length += leaf.Length;
+
+                sequences1.Reset();
+                Reset(sequences2);
+                Reset(sequences3);
             }
 
             Console.WriteLine(Encoding.UTF8.GetString(keyBuffer[..i]));
@@ -107,33 +112,24 @@ struct ButtonOptimizer
         }
         finally
         {
-            Dispose(sequences1);
             Dispose(sequences2);
             Dispose(sequences3);
         }
     }
 
-    private static PoolableList<KeyNode> GetOptimalTrajectory(
-        ReadOnlySpan<PoolableList<PoolableList<PoolableList<KeyNode>>>> sequences3)
+    private static KeyNode GetOptimalTrajectory(
+        ReadOnlySpan<PoolableList<PoolableList<KeyNode>>> sequences3)
     {
-        var trajectory = new PoolableList<KeyNode>();
+        var best = default(KeyNode?);
         foreach (var sequences2 in sequences3)
         {
-            foreach (var sequences1 in sequences2.Span)
-            {
-                foreach (var sequences in sequences1.Span)
-                {
-                    var best = default(KeyNode?);
-                    foreach (var leaf in sequences.Span)
-                        if (best is null || leaf.Length < best.Length)
-                            best = leaf;
+            foreach (var leaf in sequences2.Span)
+                if (best is null || leaf.Length < best.Length)
+                    best = leaf;
 
-                    trajectory.Add(best!);
-                }
-            }
         }
 
-        return trajectory;
+        return best!;
     }
 
     private readonly void GetNumericSequences(
@@ -286,6 +282,22 @@ struct ButtonOptimizer
         return i;
     }
 
+    private static void Reset<T>(PoolableList<PoolableList<T>> list)
+    {
+        foreach (var inner in list.Span)
+            inner.Reset();
+
+        list.Reset();
+    }
+
+    private static void Reset<T>(PoolableList<PoolableList<PoolableList<T>>> list)
+    {
+        foreach (var inner in list.Span)
+            Reset(inner);
+
+        list.Reset();
+    }
+
     private static void Dispose<T>(PoolableList<PoolableList<T>> list)
     {
         foreach (var inner in list.Span)
@@ -295,14 +307,6 @@ struct ButtonOptimizer
     }
 
     private static void Dispose<T>(PoolableList<PoolableList<PoolableList<T>>> list)
-    {
-        foreach (var inner in list.Span)
-            Dispose(inner);
-
-        list.Dispose();
-    }
-
-    private static void Dispose<T>(PoolableList<PoolableList<PoolableList<PoolableList<T>>>> list)
     {
         foreach (var inner in list.Span)
             Dispose(inner);
