@@ -84,50 +84,31 @@ struct ButtonOptimizer
     public readonly int GetOptimalTrajectory(ReadOnlySpan<byte> input)
     {
         Span<byte> keyBuffer = stackalloc byte[128];
-        using var sequences1 = new PoolableList<KeyNode>();
-        var sequences2 = new PoolableList<PoolableList<KeyNode>>();
-        var sequences3 = new PoolableList<PoolableList<PoolableList<KeyNode>>>();
-        try
+        using var sequences = new PoolableList<KeyNode>();
+        var i = 0;
+        var length = 0;
+        foreach (var key in input)
         {
-            var i = 0;
-            var length = 0;
-            foreach (var key in input)
-            {
-                GetNumericSequences(_presser1.Position, key, sequences1);
-                GetDirectionalSequences(_presser2.Position, sequences1.Span, sequences2);
-                GetDirectionalSequences(_presser3.Position, sequences2.Span, sequences3);
+            GetNumericSequences(_presser1.Position, key, sequences);
 
-                var leaf = GetOptimalTrajectory(sequences3.Span);
-                i += GetSequenceKeys(leaf, keyBuffer[i..]);
-                length += leaf.Length;
+            var leaf = GetOptimalTrajectory(sequences.Span);
+            i += GetSequenceKeys(leaf, keyBuffer[i..]);
+            length += leaf.Cost;
 
-                sequences1.Reset();
-                Reset(sequences2);
-                Reset(sequences3);
-            }
-
-            Console.WriteLine(Encoding.UTF8.GetString(keyBuffer[..i]));
-
-            return length;
+            sequences.Reset();
         }
-        finally
-        {
-            Dispose(sequences2);
-            Dispose(sequences3);
-        }
+
+        Console.WriteLine(Encoding.UTF8.GetString(keyBuffer[..i]));
+
+        return length;
     }
 
-    private static KeyNode GetOptimalTrajectory(
-        ReadOnlySpan<PoolableList<PoolableList<KeyNode>>> sequences3)
+    private static KeyNode GetOptimalTrajectory(ReadOnlySpan<KeyNode> sequences)
     {
         var best = default(KeyNode?);
-        foreach (var sequences2 in sequences3)
-        {
-            foreach (var leaf in sequences2.Span)
-                if (best is null || leaf.Length < best.Length)
-                    best = leaf;
-
-        }
+        foreach (var node in sequences)
+            if (best is null || node.Cost < best.Cost)
+                best = node;
 
         return best!;
     }
@@ -144,77 +125,36 @@ struct ButtonOptimizer
         }
     }
 
-    private readonly void GetNumericSequences(in KeypadPosition start, byte numericKey, PoolableList<KeyNode> remoteSequences)
+    private readonly void GetNumericSequences(
+        in KeypadPosition startPosition, byte numericKey, PoolableList<KeyNode> remoteSequences)
     {
-        var root = KeyNode.CreateRoot(DirectionalKeypad.Activate, in start);
-        _stack.Push(root);
+        var start = KeyNode.Start(DirectionalKeypad.Activate, in startPosition);
+        _stack.Push(start);
 
         NumericKeypad.TryGetPosition(numericKey, out var destination);
-        if (destination == start)
+        if (destination == startPosition)
         {
-            remoteSequences.Add(root);
+            remoteSequences.Add(start);
             return;
         }
 
         while (_stack.TryPop(out var current))
         {
-            if (NumericButtonPresser.TryStepVertical(current, numericKey, out var next))
+            if (NumericButtonPresser.TryStepVertical(current.Position, numericKey, out var nextPosition))
             {
-                if (next.Position == destination)
-                    remoteSequences.Add(next);
+                if (nextPosition.Position == destination)
+                    remoteSequences.Add(nextPosition);
                 else
-                    _stack.Push(next);
+                    _stack.Push(nextPosition);
             }
 
-            if (NumericButtonPresser.TryStepHorizontal(current, numericKey, out next))
+            if (NumericButtonPresser.TryStepHorizontal(current.Position, numericKey, out nextPosition))
             {
-                if (next.Position == destination)
-                    remoteSequences.Add(next);
+                if (nextPosition.Position == destination)
+                    remoteSequences.Add(nextPosition);
                 else
-                    _stack.Push(next);
+                    _stack.Push(nextPosition);
             }
-        }
-
-        _stack.Clear();
-    }
-
-    private readonly void GetDirectionalSequences(
-        in KeypadPosition start, ReadOnlySpan<PoolableList<PoolableList<KeyNode>>> localSequences2,
-        PoolableList<PoolableList<PoolableList<PoolableList<KeyNode>>>> remoteSequences3)
-    {
-        foreach (var localSequences in localSequences2)
-        {
-            var remoteSequences = new PoolableList<PoolableList<PoolableList<KeyNode>>>();
-            GetDirectionalSequences(in start, localSequences.Span, remoteSequences);
-
-            remoteSequences3.Add(remoteSequences);
-        }
-    }
-
-    private readonly void GetDirectionalSequences(
-        in KeypadPosition start, ReadOnlySpan<PoolableList<KeyNode>> localSequences1,
-        PoolableList<PoolableList<PoolableList<KeyNode>>> remoteSequences2)
-    {
-        foreach (var localSequences in localSequences1)
-        {
-            var remoteSequences = new PoolableList<PoolableList<KeyNode>>();
-            GetDirectionalSequences(in start, localSequences.Span, remoteSequences);
-
-            remoteSequences2.Add(remoteSequences);
-        }
-    }
-
-    private readonly void GetDirectionalSequences(
-        in KeypadPosition start, ReadOnlySpan<KeyNode> localSequences, PoolableList<PoolableList<KeyNode>> remoteSequences2)
-    {
-        foreach (var localSequence in localSequences)
-        {
-            var remoteSequences = new PoolableList<KeyNode>();
-            using var sequence = GetSequence(localSequence);
-            foreach (var node in sequence.Span)
-                GetDirectionalSequences(start, node.RemoteKey, remoteSequences);
-
-            remoteSequences2.Add(remoteSequences);
         }
 
         _stack.Clear();
@@ -223,7 +163,7 @@ struct ButtonOptimizer
     private readonly void GetDirectionalSequences(
         in KeypadPosition start, byte directionalKey, PoolableList<KeyNode> remoteSequences)
     {
-        var root = KeyNode.CreateRoot(DirectionalKeypad.Activate, in start);
+        var root = KeyNode.Start(DirectionalKeypad.Activate, in start);
         var stack = new Stack<KeyNode>([root]);
 
         DirectionalKeypad.TryGetPosition(directionalKey, out var destination);
@@ -235,20 +175,21 @@ struct ButtonOptimizer
 
         while (stack.TryPop(out var current))
         {
-            if (DirectionalButtonPresser.TryStepVertical(current, directionalKey, out var next))
+            if (DirectionalButtonPresser.TryStepVertical(current.Position, directionalKey, out var nextPosition))
             {
-                if (next.Position == destination)
-                    remoteSequences.Add(next);
+
+                if (nextPosition == destination)
+                    remoteSequences.Add(nextPosition);
                 else
-                    stack.Push(next);
+                    stack.Push(nextPosition);
             }
 
-            if (DirectionalButtonPresser.TryStepHorizontal(current, directionalKey, out next))
+            if (DirectionalButtonPresser.TryStepHorizontal(current.Position, directionalKey, out nextPosition))
             {
-                if (next.Position == destination)
-                    remoteSequences.Add(next);
+                if (nextPosition == destination)
+                    remoteSequences.Add(nextPosition);
                 else
-                    stack.Push(next);
+                    stack.Push(nextPosition);
             }
         }
 
@@ -258,11 +199,11 @@ struct ButtonOptimizer
     private static PoolableList<KeyNode> GetSequence(KeyNode leafNode)
     {
         KeyNode? node = leafNode;
-        var sequence = new PoolableList<KeyNode>(leafNode.Length);
+        var sequence = new PoolableList<KeyNode>(leafNode.Cost);
         while (node is not null)
         {
             sequence.Add(node);
-            node = node.Parent;
+            node = node.Prevous;
         }
 
         sequence.Span.Reverse();
@@ -404,12 +345,12 @@ struct NumericButtonPresser
         return i;
     }
 
-    public static bool TryStepHorizontal(KeyNode current, byte localKey, [NotNullWhen(true)] out KeyNode? next)
+    public static bool TryStepHorizontal(KeypadPosition current, byte localKey, out KeypadPosition next)
     {
         if (!NumericKeypad.TryGetPosition(localKey, out var target))
             throw new InvalidOperationException();
 
-        var dx = Math.Sign(target.X - current.Position.X);
+        var dx = Math.Sign(target.X - current.X);
         byte remoteKey = dx switch
         {
             > 0 => DirectionalKeypad.Right,
@@ -417,23 +358,23 @@ struct NumericButtonPresser
             0 => 0
         };
 
-        var destination = current.Position.Move(dx, 0);
+        var destination = current.Move(dx, 0);
         if (remoteKey == 0 || !NumericKeypad.TryGetKey(in destination, out _))
         {
-            next = null;
+            next = KeypadPosition.Invalid;
             return false;
         }
 
-        next = current.CreateChild(remoteKey, in destination);
+        next = destination;
         return true;
     }
 
-    public static bool TryStepVertical(KeyNode current, byte localKey, [NotNullWhen(true)] out KeyNode? next)
+    public static bool TryStepVertical(KeypadPosition current, byte localKey, out KeypadPosition next)
     {
         if (!NumericKeypad.TryGetPosition(localKey, out var target))
             throw new InvalidOperationException();
 
-        var dy = Math.Sign(target.Y - current.Position.Y);
+        var dy = Math.Sign(target.Y - current.Y);
         byte remoteKey = dy switch
         {
             > 0 => DirectionalKeypad.Down,
@@ -441,14 +382,14 @@ struct NumericButtonPresser
             0 => 0
         };
 
-        var destination = current.Position.Move(0, dy);
+        var destination = current.Move(0, dy);
         if (remoteKey == 0 || !NumericKeypad.TryGetKey(in destination, out _))
         {
-            next = null;
+            next = KeypadPosition.Invalid;
             return false;
         }
 
-        next = current.CreateChild(remoteKey, in destination);
+        next = destination;
         return true;
     }
 
@@ -548,12 +489,12 @@ struct DirectionalButtonPresser
         return i;
     }
 
-    public static bool TryStepHorizontal(KeyNode current, byte localKey, [NotNullWhen(true)] out KeyNode? next)
+    public static bool TryStepHorizontal(KeypadPosition current, byte localKey, out KeypadPosition next)
     {
         if (!DirectionalKeypad.TryGetPosition(localKey, out var target))
             throw new InvalidOperationException();
 
-        var dx = Math.Sign(target.X - current.Position.X);
+        var dx = Math.Sign(target.X - current.X);
         byte remoteKey = dx switch
         {
             > 0 => DirectionalKeypad.Right,
@@ -561,23 +502,23 @@ struct DirectionalButtonPresser
             0 => 0
         };
 
-        var destination = current.Position.Move(dx, 0);
+        var destination = current.Move(dx, 0);
         if (remoteKey == 0 || !DirectionalKeypad.TryGetKey(in destination, out _, out _, out _))
         {
-            next = null;
+            next = KeypadPosition.Invalid;
             return false;
         }
 
-        next = current.CreateChild(remoteKey, in destination);
+        next = destination;
         return true;
     }
 
-    public static bool TryStepVertical(KeyNode current, byte localKey, [NotNullWhen(true)] out KeyNode? next)
+    public static bool TryStepVertical(KeypadPosition current, byte localKey, out KeypadPosition next)
     {
         if (!DirectionalKeypad.TryGetPosition(localKey, out var target))
             throw new InvalidOperationException();
 
-        var dy = Math.Sign(target.Y - current.Position.Y);
+        var dy = Math.Sign(target.Y - current.Y);
         byte remoteKey = dy switch
         {
             > 0 => DirectionalKeypad.Down,
@@ -585,14 +526,14 @@ struct DirectionalButtonPresser
             0 => 0
         };
 
-        var destination = current.Position.Move(0, dy);
+        var destination = current.Move(0, dy);
         if (remoteKey == 0 || !DirectionalKeypad.TryGetKey(in destination, out _, out _, out _))
         {
-            next = null;
+            next = KeypadPosition.Invalid;
             return false;
         }
 
-        next = current.CreateChild(remoteKey, in destination);
+        next = destination;
         return true;
     }
 
@@ -725,13 +666,13 @@ record struct KeypadPosition(sbyte X, sbyte Y)
     public readonly KeypadPosition Move(int dx, int dy) => new((sbyte)(X + dx), (sbyte)(Y + dy));
 }
 
-record KeyNode(byte RemoteKey, KeypadPosition Position, int Length, KeyNode? Parent)
+record KeyNode(byte RemoteKey, KeypadPosition Position, int Cost, KeyNode? Prevous)
 {
-    public static KeyNode CreateRoot(byte key, in KeypadPosition position)
-        => new(key, position, Length: 0, Parent: null);
+    public static KeyNode Start(byte key, in KeypadPosition position)
+        => new(key, position, Cost: 0, Prevous: null);
 
-    public KeyNode CreateChild(byte key, in KeypadPosition position)
-        => new(key, position, Length + 1, Parent: this);
+    public KeyNode Next(byte key, in KeypadPosition position, int cost)
+        => new(key, position, Cost + cost, Prevous: this);
 }
 
 enum DirectionCode
