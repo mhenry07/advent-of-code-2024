@@ -26,6 +26,7 @@ Span<byte> robot3Sequence = new byte[1024];
 Span<byte> humanSequence = new byte[1024];
 
 var total1 = 0;
+var total2 = 0L;
 
 foreach (var range in bytes.Split("\r\n"u8))
 {
@@ -37,13 +38,17 @@ foreach (var range in bytes.Split("\r\n"u8))
     var length3 = GetRemoteSequence(robot2Sequence[..length2], in directionalKeypad, robot3Sequence);
     var length4 = GetRemoteSequence(robot3Sequence[..length3], in directionalKeypad, humanSequence);
 
+    var length26 = GetRemoteSequenceLength(code, in numericKeypad, in directionalKeypad, depth: 26);
+
     Utf8Parser.TryParse(code, out int numericValue, out _);
     total1 += length4 * numericValue;
+    total2 += length26 * numericValue;
 }
 
 var elapsed = TimeProvider.System.GetElapsedTime(start);
 
 Console.WriteLine($"Part 1: {total1}");
+Console.WriteLine($"Part 2: {total2}");
 Console.WriteLine($"Processed {bytes.Length:N0} input bytes in: {elapsed.TotalMilliseconds:N3} ms");
 
 static int GetRemoteSequence(ReadOnlySpan<byte> input, in Keypad keypad, Span<byte> remoteSequence)
@@ -63,9 +68,58 @@ static int GetRemoteSequence(ReadOnlySpan<byte> input, in Keypad keypad, Span<by
     return i;
 }
 
+static long GetRemoteSequenceLength(
+    ReadOnlySpan<byte> input, in Keypad numericKeypad, in Keypad directionalKeypad, int depth)
+{
+    var memoized = new Dictionary<CacheKey, long>();
+    var length = 0L;
+    Span<byte> path = stackalloc byte[32];
+    var previous = Keys.Activate;
+    foreach (var key in input)
+    {
+        var pathLength = GetShortestPath(previous, key, in numericKeypad, path);
+        length += GetDirectionalRemoteSequenceLength(path[..pathLength], in directionalKeypad, memoized, depth - 1);
+
+        previous = key;
+    }
+
+    return length;
+}
+
+static long GetDirectionalRemoteSequenceLength(
+    ReadOnlySpan<byte> input, in Keypad keypad, Dictionary<CacheKey, long> memoized, int depth)
+{
+    if (depth == 0)
+        return input.Length;
+
+    var length = 0L;
+    Span<byte> path = stackalloc byte[32];
+    var previous = Keys.Activate;
+    //Console.WriteLine($"Input: {Encoding.UTF8.GetString(input)}, Depth: {depth}");
+    foreach (var key in input)
+    {
+        var cacheKey = new CacheKey(previous, key, (byte)depth);
+        if (memoized.TryGetValue(cacheKey, out var sequenceLength))
+        {
+            length += sequenceLength;
+        }
+        else
+        {
+            var pathLength = GetShortestPath(previous, key, in keypad, path);
+            sequenceLength = GetDirectionalRemoteSequenceLength(path[..pathLength], in keypad, memoized, depth - 1);
+            length += sequenceLength;
+            memoized[cacheKey] = sequenceLength;
+        }
+
+        previous = key;
+    }
+
+    return length;
+}
+
 // based on a Reddit comment, the shortest path will always be:
 // - move left first if not passing over gap
-// - move vertical first if not passing over gap
+// - otherwise, move vertical first if not passing over gap
 // - otherwise, move right first
 static int GetShortestPath(byte key1, byte key2, in Keypad keypad, Span<byte> path)
 {
@@ -171,4 +225,5 @@ readonly ref struct Keypad
     public readonly Position GetPosition(byte key) => _lookup[key];
 }
 
+record struct CacheKey(byte Key1, byte Key2, byte Depth);
 record struct Position(byte X, byte Y);
