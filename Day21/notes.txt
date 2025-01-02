@@ -1,0 +1,16 @@
+expected: <v<A>>^AvA^A<vA<AA>>^AAvA<^A>AAvA^A<vA>^AA<A>A<v<A>A>^AAAvA<^A>A
+actual:   v<<A>>^AvA^Av<<A>>^AAv<A<A>>^AAvAA^<A>Av<A>^AA<A>Av<A<A>>^AAAvA^<A>A
+
+expected:
+
+<v<A>>^A vA^A <vA<AA>>^A A vA<^A>A A vA^A <vA>^A A <A>A <v<A>A>^A A A vA<^A>A
+   <   A  > A   v <<   A A  >  ^ A A  > A   v  A A  ^ A    < v  A A A  >  ^ A
+       ^    A          < <       ^ ^    A      > >    A         v v v       A
+            3                           7             9                     A
+
+actual:
+
+v<<A>>^A vA^A v<<A>>^A A v<A<A>>^A A vAA^<A>A v<A>^A A <A>A v<A<A>>^A A A vA^<A>A
+   <   A  > A    <   A A   v <   A A  >>  ^ A   v  A A  ^ A   v <   A A A  >  ^ A
+       ^    A        ^ ^         < <        A      > >    A         v v v       A
+            3                               7             9                     A

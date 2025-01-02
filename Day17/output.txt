@@ -1,0 +1,832 @@
+Register A: ??
+Register B: 0
+Register C: 0
+
+Program: 2,4,1,2,7,5,1,3,4,4,5,5,0,3,3,0
+
+---
+
+Best matching length: 1, A: 17 (0x11 / 0b0001_0001)
+bst: opcode: 2, operand: 4 => 17, Registers: A: 17, B: 1, C: 0, instruction ptr: 2, output:
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 17, B: 3, C: 0, instruction ptr: 4, output:
+cdv: opcode: 7, operand: 5 => 3, Registers: A: 17, B: 3, C: 2, instruction ptr: 6, output:
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 17, B: 0, C: 2, instruction ptr: 8, output:
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 17, B: 2, C: 2, instruction ptr: 10, output:
+out: opcode: 5, operand: 5 => 2, Registers: A: 17, B: 2, C: 2, instruction ptr: 12, output: 2
+adv: opcode: 0, operand: 3 => 3, Registers: A: 2, B: 2, C: 2, instruction ptr: 14, output: 2
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 2, B: 2, C: 2, instruction ptr: 0, output: 2
+bst: opcode: 2, operand: 4 => 2, Registers: A: 2, B: 2, C: 2, instruction ptr: 2, output: 2
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 2, B: 0, C: 2, instruction ptr: 4, output: 2
+cdv: opcode: 7, operand: 5 => 0, Registers: A: 2, B: 0, C: 2, instruction ptr: 6, output: 2
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 2, B: 3, C: 2, instruction ptr: 8, output: 2
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 2, B: 1, C: 2, instruction ptr: 10, output: 2
+out: opcode: 5, operand: 5 => 1, Registers: A: 2, B: 1, C: 2, instruction ptr: 12, output: 2,1
+
+Best matching length: 2, A: 492 (0x1EC / 0b0001_1110_1100)
+bst: opcode: 2, operand: 4 => 492, Registers: A: 492, B: 4, C: 0, instruction ptr: 2, output:
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 492, B: 6, C: 0, instruction ptr: 4, output:
+cdv: opcode: 7, operand: 5 => 6, Registers: A: 492, B: 6, C: 7, instruction ptr: 6, output:
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 492, B: 5, C: 7, instruction ptr: 8, output:
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 492, B: 2, C: 7, instruction ptr: 10, output:
+out: opcode: 5, operand: 5 => 2, Registers: A: 492, B: 2, C: 7, instruction ptr: 12, output: 2
+adv: opcode: 0, operand: 3 => 3, Registers: A: 61, B: 2, C: 7, instruction ptr: 14, output: 2
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 61, B: 2, C: 7, instruction ptr: 0, output: 2
+bst: opcode: 2, operand: 4 => 61, Registers: A: 61, B: 5, C: 7, instruction ptr: 2, output: 2
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 61, B: 7, C: 7, instruction ptr: 4, output: 2
+cdv: opcode: 7, operand: 5 => 7, Registers: A: 61, B: 7, C: 0, instruction ptr: 6, output: 2
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 61, B: 4, C: 0, instruction ptr: 8, output: 2
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 61, B: 4, C: 0, instruction ptr: 10, output: 2
+out: opcode: 5, operand: 5 => 4, Registers: A: 61, B: 4, C: 0, instruction ptr: 12, output: 2,4
+adv: opcode: 0, operand: 3 => 3, Registers: A: 7, B: 4, C: 0, instruction ptr: 14, output: 2,4
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 7, B: 4, C: 0, instruction ptr: 0, output: 2,4
+bst: opcode: 2, operand: 4 => 7, Registers: A: 7, B: 7, C: 0, instruction ptr: 2, output: 2,4
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 7, B: 5, C: 0, instruction ptr: 4, output: 2,4
+cdv: opcode: 7, operand: 5 => 5, Registers: A: 7, B: 5, C: 0, instruction ptr: 6, output: 2,4
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 7, B: 6, C: 0, instruction ptr: 8, output: 2,4
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 7, B: 6, C: 0, instruction ptr: 10, output: 2,4
+out: opcode: 5, operand: 5 => 6, Registers: A: 7, B: 6, C: 0, instruction ptr: 12, output: 2,4,6
+
+Best matching length: 3, A: 14836 (0x39F4 / 0b0011_1001_1111_0100)
+bst: opcode: 2, operand: 4 => 14836, Registers: A: 14836, B: 4, C: 0, instruction ptr: 2, output:
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 14836, B: 6, C: 0, instruction ptr: 4, output:
+cdv: opcode: 7, operand: 5 => 6, Registers: A: 14836, B: 6, C: 231, instruction ptr: 6, output:
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 14836, B: 5, C: 231, instruction ptr: 8, output:
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 14836, B: 226, C: 231, instruction ptr: 10, output:
+out: opcode: 5, operand: 5 => 226, Registers: A: 14836, B: 226, C: 231, instruction ptr: 12, output: 2
+adv: opcode: 0, operand: 3 => 3, Registers: A: 1854, B: 226, C: 231, instruction ptr: 14, output: 2
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 1854, B: 226, C: 231, instruction ptr: 0, output: 2
+bst: opcode: 2, operand: 4 => 1854, Registers: A: 1854, B: 6, C: 231, instruction ptr: 2, output: 2
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 1854, B: 4, C: 231, instruction ptr: 4, output: 2
+cdv: opcode: 7, operand: 5 => 4, Registers: A: 1854, B: 4, C: 115, instruction ptr: 6, output: 2
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 1854, B: 7, C: 115, instruction ptr: 8, output: 2
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 1854, B: 116, C: 115, instruction ptr: 10, output: 2
+out: opcode: 5, operand: 5 => 116, Registers: A: 1854, B: 116, C: 115, instruction ptr: 12, output: 2,4
+adv: opcode: 0, operand: 3 => 3, Registers: A: 231, B: 116, C: 115, instruction ptr: 14, output: 2,4
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 231, B: 116, C: 115, instruction ptr: 0, output: 2,4
+bst: opcode: 2, operand: 4 => 231, Registers: A: 231, B: 7, C: 115, instruction ptr: 2, output: 2,4
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 231, B: 5, C: 115, instruction ptr: 4, output: 2,4
+cdv: opcode: 7, operand: 5 => 5, Registers: A: 231, B: 5, C: 7, instruction ptr: 6, output: 2,4
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 231, B: 6, C: 7, instruction ptr: 8, output: 2,4
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 231, B: 1, C: 7, instruction ptr: 10, output: 2,4
+out: opcode: 5, operand: 5 => 1, Registers: A: 231, B: 1, C: 7, instruction ptr: 12, output: 2,4,1
+adv: opcode: 0, operand: 3 => 3, Registers: A: 28, B: 1, C: 7, instruction ptr: 14, output: 2,4,1
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 28, B: 1, C: 7, instruction ptr: 0, output: 2,4,1
+bst: opcode: 2, operand: 4 => 28, Registers: A: 28, B: 4, C: 7, instruction ptr: 2, output: 2,4,1
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 28, B: 6, C: 7, instruction ptr: 4, output: 2,4,1
+cdv: opcode: 7, operand: 5 => 6, Registers: A: 28, B: 6, C: 0, instruction ptr: 6, output: 2,4,1
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 28, B: 5, C: 0, instruction ptr: 8, output: 2,4,1
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 28, B: 5, C: 0, instruction ptr: 10, output: 2,4,1
+out: opcode: 5, operand: 5 => 5, Registers: A: 28, B: 5, C: 0, instruction ptr: 12, output: 2,4,1,5
+
+Best matching length: 4, A: 41829 (0xA365 / 0b1010_0011_0110_0101)
+bst: opcode: 2, operand: 4 => 41829, Registers: A: 41829, B: 5, C: 0, instruction ptr: 2, output:
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 41829, B: 7, C: 0, instruction ptr: 4, output:
+cdv: opcode: 7, operand: 5 => 7, Registers: A: 41829, B: 7, C: 326, instruction ptr: 6, output:
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 41829, B: 4, C: 326, instruction ptr: 8, output:
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 41829, B: 322, C: 326, instruction ptr: 10, output:
+out: opcode: 5, operand: 5 => 322, Registers: A: 41829, B: 322, C: 326, instruction ptr: 12, output: 2
+adv: opcode: 0, operand: 3 => 3, Registers: A: 5228, B: 322, C: 326, instruction ptr: 14, output: 2
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 5228, B: 322, C: 326, instruction ptr: 0, output: 2
+bst: opcode: 2, operand: 4 => 5228, Registers: A: 5228, B: 4, C: 326, instruction ptr: 2, output: 2
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 5228, B: 6, C: 326, instruction ptr: 4, output: 2
+cdv: opcode: 7, operand: 5 => 6, Registers: A: 5228, B: 6, C: 81, instruction ptr: 6, output: 2
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 5228, B: 5, C: 81, instruction ptr: 8, output: 2
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 5228, B: 84, C: 81, instruction ptr: 10, output: 2
+out: opcode: 5, operand: 5 => 84, Registers: A: 5228, B: 84, C: 81, instruction ptr: 12, output: 2,4
+adv: opcode: 0, operand: 3 => 3, Registers: A: 653, B: 84, C: 81, instruction ptr: 14, output: 2,4
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 653, B: 84, C: 81, instruction ptr: 0, output: 2,4
+bst: opcode: 2, operand: 4 => 653, Registers: A: 653, B: 5, C: 81, instruction ptr: 2, output: 2,4
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 653, B: 7, C: 81, instruction ptr: 4, output: 2,4
+cdv: opcode: 7, operand: 5 => 7, Registers: A: 653, B: 7, C: 5, instruction ptr: 6, output: 2,4
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 653, B: 4, C: 5, instruction ptr: 8, output: 2,4
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 653, B: 1, C: 5, instruction ptr: 10, output: 2,4
+out: opcode: 5, operand: 5 => 1, Registers: A: 653, B: 1, C: 5, instruction ptr: 12, output: 2,4,1
+adv: opcode: 0, operand: 3 => 3, Registers: A: 81, B: 1, C: 5, instruction ptr: 14, output: 2,4,1
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 81, B: 1, C: 5, instruction ptr: 0, output: 2,4,1
+bst: opcode: 2, operand: 4 => 81, Registers: A: 81, B: 1, C: 5, instruction ptr: 2, output: 2,4,1
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 81, B: 3, C: 5, instruction ptr: 4, output: 2,4,1
+cdv: opcode: 7, operand: 5 => 3, Registers: A: 81, B: 3, C: 10, instruction ptr: 6, output: 2,4,1
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 81, B: 0, C: 10, instruction ptr: 8, output: 2,4,1
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 81, B: 10, C: 10, instruction ptr: 10, output: 2,4,1
+out: opcode: 5, operand: 5 => 10, Registers: A: 81, B: 10, C: 10, instruction ptr: 12, output: 2,4,1,2
+adv: opcode: 0, operand: 3 => 3, Registers: A: 10, B: 10, C: 10, instruction ptr: 14, output: 2,4,1,2
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 10, B: 10, C: 10, instruction ptr: 0, output: 2,4,1,2
+bst: opcode: 2, operand: 4 => 10, Registers: A: 10, B: 2, C: 10, instruction ptr: 2, output: 2,4,1,2
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 10, B: 0, C: 10, instruction ptr: 4, output: 2,4,1,2
+cdv: opcode: 7, operand: 5 => 0, Registers: A: 10, B: 0, C: 10, instruction ptr: 6, output: 2,4,1,2
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 10, B: 3, C: 10, instruction ptr: 8, output: 2,4,1,2
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 10, B: 9, C: 10, instruction ptr: 10, output: 2,4,1,2
+out: opcode: 5, operand: 5 => 9, Registers: A: 10, B: 9, C: 10, instruction ptr: 12, output: 2,4,1,2,1
+
+Best matching length: 5, A: 48628 (0xBDF4 / 0b1011_1101_1111_0100)
+bst: opcode: 2, operand: 4 => 48628, Registers: A: 48628, B: 4, C: 0, instruction ptr: 2, output:
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 48628, B: 6, C: 0, instruction ptr: 4, output:
+cdv: opcode: 7, operand: 5 => 6, Registers: A: 48628, B: 6, C: 759, instruction ptr: 6, output:
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 48628, B: 5, C: 759, instruction ptr: 8, output:
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 48628, B: 754, C: 759, instruction ptr: 10, output:
+out: opcode: 5, operand: 5 => 754, Registers: A: 48628, B: 754, C: 759, instruction ptr: 12, output: 2
+adv: opcode: 0, operand: 3 => 3, Registers: A: 6078, B: 754, C: 759, instruction ptr: 14, output: 2
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 6078, B: 754, C: 759, instruction ptr: 0, output: 2
+bst: opcode: 2, operand: 4 => 6078, Registers: A: 6078, B: 6, C: 759, instruction ptr: 2, output: 2
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 6078, B: 4, C: 759, instruction ptr: 4, output: 2
+cdv: opcode: 7, operand: 5 => 4, Registers: A: 6078, B: 4, C: 379, instruction ptr: 6, output: 2
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 6078, B: 7, C: 379, instruction ptr: 8, output: 2
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 6078, B: 380, C: 379, instruction ptr: 10, output: 2
+out: opcode: 5, operand: 5 => 380, Registers: A: 6078, B: 380, C: 379, instruction ptr: 12, output: 2,4
+adv: opcode: 0, operand: 3 => 3, Registers: A: 759, B: 380, C: 379, instruction ptr: 14, output: 2,4
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 759, B: 380, C: 379, instruction ptr: 0, output: 2,4
+bst: opcode: 2, operand: 4 => 759, Registers: A: 759, B: 7, C: 379, instruction ptr: 2, output: 2,4
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 759, B: 5, C: 379, instruction ptr: 4, output: 2,4
+cdv: opcode: 7, operand: 5 => 5, Registers: A: 759, B: 5, C: 23, instruction ptr: 6, output: 2,4
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 759, B: 6, C: 23, instruction ptr: 8, output: 2,4
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 759, B: 17, C: 23, instruction ptr: 10, output: 2,4
+out: opcode: 5, operand: 5 => 17, Registers: A: 759, B: 17, C: 23, instruction ptr: 12, output: 2,4,1
+adv: opcode: 0, operand: 3 => 3, Registers: A: 94, B: 17, C: 23, instruction ptr: 14, output: 2,4,1
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 94, B: 17, C: 23, instruction ptr: 0, output: 2,4,1
+bst: opcode: 2, operand: 4 => 94, Registers: A: 94, B: 6, C: 23, instruction ptr: 2, output: 2,4,1
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 94, B: 4, C: 23, instruction ptr: 4, output: 2,4,1
+cdv: opcode: 7, operand: 5 => 4, Registers: A: 94, B: 4, C: 5, instruction ptr: 6, output: 2,4,1
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 94, B: 7, C: 5, instruction ptr: 8, output: 2,4,1
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 94, B: 2, C: 5, instruction ptr: 10, output: 2,4,1
+out: opcode: 5, operand: 5 => 2, Registers: A: 94, B: 2, C: 5, instruction ptr: 12, output: 2,4,1,2
+adv: opcode: 0, operand: 3 => 3, Registers: A: 11, B: 2, C: 5, instruction ptr: 14, output: 2,4,1,2
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 11, B: 2, C: 5, instruction ptr: 0, output: 2,4,1,2
+bst: opcode: 2, operand: 4 => 11, Registers: A: 11, B: 3, C: 5, instruction ptr: 2, output: 2,4,1,2
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 11, B: 1, C: 5, instruction ptr: 4, output: 2,4,1,2
+cdv: opcode: 7, operand: 5 => 1, Registers: A: 11, B: 1, C: 5, instruction ptr: 6, output: 2,4,1,2
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 11, B: 2, C: 5, instruction ptr: 8, output: 2,4,1,2
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 11, B: 7, C: 5, instruction ptr: 10, output: 2,4,1,2
+out: opcode: 5, operand: 5 => 7, Registers: A: 11, B: 7, C: 5, instruction ptr: 12, output: 2,4,1,2,7
+adv: opcode: 0, operand: 3 => 3, Registers: A: 1, B: 7, C: 5, instruction ptr: 14, output: 2,4,1,2,7
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 1, B: 7, C: 5, instruction ptr: 0, output: 2,4,1,2,7
+bst: opcode: 2, operand: 4 => 1, Registers: A: 1, B: 1, C: 5, instruction ptr: 2, output: 2,4,1,2,7
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 1, B: 3, C: 5, instruction ptr: 4, output: 2,4,1,2,7
+cdv: opcode: 7, operand: 5 => 3, Registers: A: 1, B: 3, C: 0, instruction ptr: 6, output: 2,4,1,2,7
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 1, B: 0, C: 0, instruction ptr: 8, output: 2,4,1,2,7
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 1, B: 0, C: 0, instruction ptr: 10, output: 2,4,1,2,7
+out: opcode: 5, operand: 5 => 0, Registers: A: 1, B: 0, C: 0, instruction ptr: 12, output: 2,4,1,2,7,0
+
+Best matching length: 6, A: 1359348 (0x14_BDF4 / 0b0001_0100_1011_1101_1111_0100)
+bst: opcode: 2, operand: 4 => 1359348, Registers: A: 1359348, B: 4, C: 0, instruction ptr: 2, output:
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 1359348, B: 6, C: 0, instruction ptr: 4, output:
+cdv: opcode: 7, operand: 5 => 6, Registers: A: 1359348, B: 6, C: 21239, instruction ptr: 6, output:
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 1359348, B: 5, C: 21239, instruction ptr: 8, output:
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 1359348, B: 21234, C: 21239, instruction ptr: 10, output:
+out: opcode: 5, operand: 5 => 21234, Registers: A: 1359348, B: 21234, C: 21239, instruction ptr: 12, output: 2
+adv: opcode: 0, operand: 3 => 3, Registers: A: 169918, B: 21234, C: 21239, instruction ptr: 14, output: 2
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 169918, B: 21234, C: 21239, instruction ptr: 0, output: 2
+bst: opcode: 2, operand: 4 => 169918, Registers: A: 169918, B: 6, C: 21239, instruction ptr: 2, output: 2
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 169918, B: 4, C: 21239, instruction ptr: 4, output: 2
+cdv: opcode: 7, operand: 5 => 4, Registers: A: 169918, B: 4, C: 10619, instruction ptr: 6, output: 2
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 169918, B: 7, C: 10619, instruction ptr: 8, output: 2
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 169918, B: 10620, C: 10619, instruction ptr: 10, output: 2
+out: opcode: 5, operand: 5 => 10620, Registers: A: 169918, B: 10620, C: 10619, instruction ptr: 12, output: 2,4
+adv: opcode: 0, operand: 3 => 3, Registers: A: 21239, B: 10620, C: 10619, instruction ptr: 14, output: 2,4
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 21239, B: 10620, C: 10619, instruction ptr: 0, output: 2,4
+bst: opcode: 2, operand: 4 => 21239, Registers: A: 21239, B: 7, C: 10619, instruction ptr: 2, output: 2,4
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 21239, B: 5, C: 10619, instruction ptr: 4, output: 2,4
+cdv: opcode: 7, operand: 5 => 5, Registers: A: 21239, B: 5, C: 663, instruction ptr: 6, output: 2,4
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 21239, B: 6, C: 663, instruction ptr: 8, output: 2,4
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 21239, B: 657, C: 663, instruction ptr: 10, output: 2,4
+out: opcode: 5, operand: 5 => 657, Registers: A: 21239, B: 657, C: 663, instruction ptr: 12, output: 2,4,1
+adv: opcode: 0, operand: 3 => 3, Registers: A: 2654, B: 657, C: 663, instruction ptr: 14, output: 2,4,1
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 2654, B: 657, C: 663, instruction ptr: 0, output: 2,4,1
+bst: opcode: 2, operand: 4 => 2654, Registers: A: 2654, B: 6, C: 663, instruction ptr: 2, output: 2,4,1
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 2654, B: 4, C: 663, instruction ptr: 4, output: 2,4,1
+cdv: opcode: 7, operand: 5 => 4, Registers: A: 2654, B: 4, C: 165, instruction ptr: 6, output: 2,4,1
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 2654, B: 7, C: 165, instruction ptr: 8, output: 2,4,1
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 2654, B: 162, C: 165, instruction ptr: 10, output: 2,4,1
+out: opcode: 5, operand: 5 => 162, Registers: A: 2654, B: 162, C: 165, instruction ptr: 12, output: 2,4,1,2
+adv: opcode: 0, operand: 3 => 3, Registers: A: 331, B: 162, C: 165, instruction ptr: 14, output: 2,4,1,2
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 331, B: 162, C: 165, instruction ptr: 0, output: 2,4,1,2
+bst: opcode: 2, operand: 4 => 331, Registers: A: 331, B: 3, C: 165, instruction ptr: 2, output: 2,4,1,2
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 331, B: 1, C: 165, instruction ptr: 4, output: 2,4,1,2
+cdv: opcode: 7, operand: 5 => 1, Registers: A: 331, B: 1, C: 165, instruction ptr: 6, output: 2,4,1,2
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 331, B: 2, C: 165, instruction ptr: 8, output: 2,4,1,2
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 331, B: 167, C: 165, instruction ptr: 10, output: 2,4,1,2
+out: opcode: 5, operand: 5 => 167, Registers: A: 331, B: 167, C: 165, instruction ptr: 12, output: 2,4,1,2,7
+adv: opcode: 0, operand: 3 => 3, Registers: A: 41, B: 167, C: 165, instruction ptr: 14, output: 2,4,1,2,7
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 41, B: 167, C: 165, instruction ptr: 0, output: 2,4,1,2,7
+bst: opcode: 2, operand: 4 => 41, Registers: A: 41, B: 1, C: 165, instruction ptr: 2, output: 2,4,1,2,7
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 41, B: 3, C: 165, instruction ptr: 4, output: 2,4,1,2,7
+cdv: opcode: 7, operand: 5 => 3, Registers: A: 41, B: 3, C: 5, instruction ptr: 6, output: 2,4,1,2,7
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 41, B: 0, C: 5, instruction ptr: 8, output: 2,4,1,2,7
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 41, B: 5, C: 5, instruction ptr: 10, output: 2,4,1,2,7
+out: opcode: 5, operand: 5 => 5, Registers: A: 41, B: 5, C: 5, instruction ptr: 12, output: 2,4,1,2,7,5
+adv: opcode: 0, operand: 3 => 3, Registers: A: 5, B: 5, C: 5, instruction ptr: 14, output: 2,4,1,2,7,5
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 5, B: 5, C: 5, instruction ptr: 0, output: 2,4,1,2,7,5
+bst: opcode: 2, operand: 4 => 5, Registers: A: 5, B: 5, C: 5, instruction ptr: 2, output: 2,4,1,2,7,5
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 5, B: 7, C: 5, instruction ptr: 4, output: 2,4,1,2,7,5
+cdv: opcode: 7, operand: 5 => 7, Registers: A: 5, B: 7, C: 0, instruction ptr: 6, output: 2,4,1,2,7,5
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 5, B: 4, C: 0, instruction ptr: 8, output: 2,4,1,2,7,5
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 5, B: 4, C: 0, instruction ptr: 10, output: 2,4,1,2,7,5
+out: opcode: 5, operand: 5 => 4, Registers: A: 5, B: 4, C: 0, instruction ptr: 12, output: 2,4,1,2,7,5,4
+
+Best matching length: 7, A: 4898292 (0x4A_BDF4 / 0b0100_1010_1011_1101_1111_0100)
+bst: opcode: 2, operand: 4 => 4898292, Registers: A: 4898292, B: 4, C: 0, instruction ptr: 2, output:
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 4898292, B: 6, C: 0, instruction ptr: 4, output:
+cdv: opcode: 7, operand: 5 => 6, Registers: A: 4898292, B: 6, C: 76535, instruction ptr: 6, output:
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 4898292, B: 5, C: 76535, instruction ptr: 8, output:
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 4898292, B: 76530, C: 76535, instruction ptr: 10, output:
+out: opcode: 5, operand: 5 => 76530, Registers: A: 4898292, B: 76530, C: 76535, instruction ptr: 12, output: 2
+adv: opcode: 0, operand: 3 => 3, Registers: A: 612286, B: 76530, C: 76535, instruction ptr: 14, output: 2
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 612286, B: 76530, C: 76535, instruction ptr: 0, output: 2
+bst: opcode: 2, operand: 4 => 612286, Registers: A: 612286, B: 6, C: 76535, instruction ptr: 2, output: 2
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 612286, B: 4, C: 76535, instruction ptr: 4, output: 2
+cdv: opcode: 7, operand: 5 => 4, Registers: A: 612286, B: 4, C: 38267, instruction ptr: 6, output: 2
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 612286, B: 7, C: 38267, instruction ptr: 8, output: 2
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 612286, B: 38268, C: 38267, instruction ptr: 10, output: 2
+out: opcode: 5, operand: 5 => 38268, Registers: A: 612286, B: 38268, C: 38267, instruction ptr: 12, output: 2,4
+adv: opcode: 0, operand: 3 => 3, Registers: A: 76535, B: 38268, C: 38267, instruction ptr: 14, output: 2,4
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 76535, B: 38268, C: 38267, instruction ptr: 0, output: 2,4
+bst: opcode: 2, operand: 4 => 76535, Registers: A: 76535, B: 7, C: 38267, instruction ptr: 2, output: 2,4
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 76535, B: 5, C: 38267, instruction ptr: 4, output: 2,4
+cdv: opcode: 7, operand: 5 => 5, Registers: A: 76535, B: 5, C: 2391, instruction ptr: 6, output: 2,4
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 76535, B: 6, C: 2391, instruction ptr: 8, output: 2,4
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 76535, B: 2385, C: 2391, instruction ptr: 10, output: 2,4
+out: opcode: 5, operand: 5 => 2385, Registers: A: 76535, B: 2385, C: 2391, instruction ptr: 12, output: 2,4,1
+adv: opcode: 0, operand: 3 => 3, Registers: A: 9566, B: 2385, C: 2391, instruction ptr: 14, output: 2,4,1
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 9566, B: 2385, C: 2391, instruction ptr: 0, output: 2,4,1
+bst: opcode: 2, operand: 4 => 9566, Registers: A: 9566, B: 6, C: 2391, instruction ptr: 2, output: 2,4,1
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 9566, B: 4, C: 2391, instruction ptr: 4, output: 2,4,1
+cdv: opcode: 7, operand: 5 => 4, Registers: A: 9566, B: 4, C: 597, instruction ptr: 6, output: 2,4,1
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 9566, B: 7, C: 597, instruction ptr: 8, output: 2,4,1
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 9566, B: 594, C: 597, instruction ptr: 10, output: 2,4,1
+out: opcode: 5, operand: 5 => 594, Registers: A: 9566, B: 594, C: 597, instruction ptr: 12, output: 2,4,1,2
+adv: opcode: 0, operand: 3 => 3, Registers: A: 1195, B: 594, C: 597, instruction ptr: 14, output: 2,4,1,2
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 1195, B: 594, C: 597, instruction ptr: 0, output: 2,4,1,2
+bst: opcode: 2, operand: 4 => 1195, Registers: A: 1195, B: 3, C: 597, instruction ptr: 2, output: 2,4,1,2
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 1195, B: 1, C: 597, instruction ptr: 4, output: 2,4,1,2
+cdv: opcode: 7, operand: 5 => 1, Registers: A: 1195, B: 1, C: 597, instruction ptr: 6, output: 2,4,1,2
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 1195, B: 2, C: 597, instruction ptr: 8, output: 2,4,1,2
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 1195, B: 599, C: 597, instruction ptr: 10, output: 2,4,1,2
+out: opcode: 5, operand: 5 => 599, Registers: A: 1195, B: 599, C: 597, instruction ptr: 12, output: 2,4,1,2,7
+adv: opcode: 0, operand: 3 => 3, Registers: A: 149, B: 599, C: 597, instruction ptr: 14, output: 2,4,1,2,7
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 149, B: 599, C: 597, instruction ptr: 0, output: 2,4,1,2,7
+bst: opcode: 2, operand: 4 => 149, Registers: A: 149, B: 5, C: 597, instruction ptr: 2, output: 2,4,1,2,7
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 149, B: 7, C: 597, instruction ptr: 4, output: 2,4,1,2,7
+cdv: opcode: 7, operand: 5 => 7, Registers: A: 149, B: 7, C: 1, instruction ptr: 6, output: 2,4,1,2,7
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 149, B: 4, C: 1, instruction ptr: 8, output: 2,4,1,2,7
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 149, B: 5, C: 1, instruction ptr: 10, output: 2,4,1,2,7
+out: opcode: 5, operand: 5 => 5, Registers: A: 149, B: 5, C: 1, instruction ptr: 12, output: 2,4,1,2,7,5
+adv: opcode: 0, operand: 3 => 3, Registers: A: 18, B: 5, C: 1, instruction ptr: 14, output: 2,4,1,2,7,5
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 18, B: 5, C: 1, instruction ptr: 0, output: 2,4,1,2,7,5
+bst: opcode: 2, operand: 4 => 18, Registers: A: 18, B: 2, C: 1, instruction ptr: 2, output: 2,4,1,2,7,5
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 18, B: 0, C: 1, instruction ptr: 4, output: 2,4,1,2,7,5
+cdv: opcode: 7, operand: 5 => 0, Registers: A: 18, B: 0, C: 18, instruction ptr: 6, output: 2,4,1,2,7,5
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 18, B: 3, C: 18, instruction ptr: 8, output: 2,4,1,2,7,5
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 18, B: 17, C: 18, instruction ptr: 10, output: 2,4,1,2,7,5
+out: opcode: 5, operand: 5 => 17, Registers: A: 18, B: 17, C: 18, instruction ptr: 12, output: 2,4,1,2,7,5,1
+adv: opcode: 0, operand: 3 => 3, Registers: A: 2, B: 17, C: 18, instruction ptr: 14, output: 2,4,1,2,7,5,1
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 2, B: 17, C: 18, instruction ptr: 0, output: 2,4,1,2,7,5,1
+bst: opcode: 2, operand: 4 => 2, Registers: A: 2, B: 2, C: 18, instruction ptr: 2, output: 2,4,1,2,7,5,1
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 2, B: 0, C: 18, instruction ptr: 4, output: 2,4,1,2,7,5,1
+cdv: opcode: 7, operand: 5 => 0, Registers: A: 2, B: 0, C: 2, instruction ptr: 6, output: 2,4,1,2,7,5,1
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 2, B: 3, C: 2, instruction ptr: 8, output: 2,4,1,2,7,5,1
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 2, B: 1, C: 2, instruction ptr: 10, output: 2,4,1,2,7,5,1
+out: opcode: 5, operand: 5 => 1, Registers: A: 2, B: 1, C: 2, instruction ptr: 12, output: 2,4,1,2,7,5,1,1
+
+Best matching length: 8, A: 6995444 (0x6A_BDF4 / 0b0110_1010_1011_1101_1111_0100)
+bst: opcode: 2, operand: 4 => 6995444, Registers: A: 6995444, B: 4, C: 0, instruction ptr: 2, output:
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 6995444, B: 6, C: 0, instruction ptr: 4, output:
+cdv: opcode: 7, operand: 5 => 6, Registers: A: 6995444, B: 6, C: 109303, instruction ptr: 6, output:
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 6995444, B: 5, C: 109303, instruction ptr: 8, output:
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 6995444, B: 109298, C: 109303, instruction ptr: 10, output:
+out: opcode: 5, operand: 5 => 109298, Registers: A: 6995444, B: 109298, C: 109303, instruction ptr: 12, output: 2
+adv: opcode: 0, operand: 3 => 3, Registers: A: 874430, B: 109298, C: 109303, instruction ptr: 14, output: 2
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 874430, B: 109298, C: 109303, instruction ptr: 0, output: 2
+bst: opcode: 2, operand: 4 => 874430, Registers: A: 874430, B: 6, C: 109303, instruction ptr: 2, output: 2
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 874430, B: 4, C: 109303, instruction ptr: 4, output: 2
+cdv: opcode: 7, operand: 5 => 4, Registers: A: 874430, B: 4, C: 54651, instruction ptr: 6, output: 2
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 874430, B: 7, C: 54651, instruction ptr: 8, output: 2
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 874430, B: 54652, C: 54651, instruction ptr: 10, output: 2
+out: opcode: 5, operand: 5 => 54652, Registers: A: 874430, B: 54652, C: 54651, instruction ptr: 12, output: 2,4
+adv: opcode: 0, operand: 3 => 3, Registers: A: 109303, B: 54652, C: 54651, instruction ptr: 14, output: 2,4
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 109303, B: 54652, C: 54651, instruction ptr: 0, output: 2,4
+bst: opcode: 2, operand: 4 => 109303, Registers: A: 109303, B: 7, C: 54651, instruction ptr: 2, output: 2,4
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 109303, B: 5, C: 54651, instruction ptr: 4, output: 2,4
+cdv: opcode: 7, operand: 5 => 5, Registers: A: 109303, B: 5, C: 3415, instruction ptr: 6, output: 2,4
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 109303, B: 6, C: 3415, instruction ptr: 8, output: 2,4
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 109303, B: 3409, C: 3415, instruction ptr: 10, output: 2,4
+out: opcode: 5, operand: 5 => 3409, Registers: A: 109303, B: 3409, C: 3415, instruction ptr: 12, output: 2,4,1
+adv: opcode: 0, operand: 3 => 3, Registers: A: 13662, B: 3409, C: 3415, instruction ptr: 14, output: 2,4,1
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 13662, B: 3409, C: 3415, instruction ptr: 0, output: 2,4,1
+bst: opcode: 2, operand: 4 => 13662, Registers: A: 13662, B: 6, C: 3415, instruction ptr: 2, output: 2,4,1
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 13662, B: 4, C: 3415, instruction ptr: 4, output: 2,4,1
+cdv: opcode: 7, operand: 5 => 4, Registers: A: 13662, B: 4, C: 853, instruction ptr: 6, output: 2,4,1
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 13662, B: 7, C: 853, instruction ptr: 8, output: 2,4,1
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 13662, B: 850, C: 853, instruction ptr: 10, output: 2,4,1
+out: opcode: 5, operand: 5 => 850, Registers: A: 13662, B: 850, C: 853, instruction ptr: 12, output: 2,4,1,2
+adv: opcode: 0, operand: 3 => 3, Registers: A: 1707, B: 850, C: 853, instruction ptr: 14, output: 2,4,1,2
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 1707, B: 850, C: 853, instruction ptr: 0, output: 2,4,1,2
+bst: opcode: 2, operand: 4 => 1707, Registers: A: 1707, B: 3, C: 853, instruction ptr: 2, output: 2,4,1,2
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 1707, B: 1, C: 853, instruction ptr: 4, output: 2,4,1,2
+cdv: opcode: 7, operand: 5 => 1, Registers: A: 1707, B: 1, C: 853, instruction ptr: 6, output: 2,4,1,2
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 1707, B: 2, C: 853, instruction ptr: 8, output: 2,4,1,2
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 1707, B: 855, C: 853, instruction ptr: 10, output: 2,4,1,2
+out: opcode: 5, operand: 5 => 855, Registers: A: 1707, B: 855, C: 853, instruction ptr: 12, output: 2,4,1,2,7
+adv: opcode: 0, operand: 3 => 3, Registers: A: 213, B: 855, C: 853, instruction ptr: 14, output: 2,4,1,2,7
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 213, B: 855, C: 853, instruction ptr: 0, output: 2,4,1,2,7
+bst: opcode: 2, operand: 4 => 213, Registers: A: 213, B: 5, C: 853, instruction ptr: 2, output: 2,4,1,2,7
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 213, B: 7, C: 853, instruction ptr: 4, output: 2,4,1,2,7
+cdv: opcode: 7, operand: 5 => 7, Registers: A: 213, B: 7, C: 1, instruction ptr: 6, output: 2,4,1,2,7
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 213, B: 4, C: 1, instruction ptr: 8, output: 2,4,1,2,7
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 213, B: 5, C: 1, instruction ptr: 10, output: 2,4,1,2,7
+out: opcode: 5, operand: 5 => 5, Registers: A: 213, B: 5, C: 1, instruction ptr: 12, output: 2,4,1,2,7,5
+adv: opcode: 0, operand: 3 => 3, Registers: A: 26, B: 5, C: 1, instruction ptr: 14, output: 2,4,1,2,7,5
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 26, B: 5, C: 1, instruction ptr: 0, output: 2,4,1,2,7,5
+bst: opcode: 2, operand: 4 => 26, Registers: A: 26, B: 2, C: 1, instruction ptr: 2, output: 2,4,1,2,7,5
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 26, B: 0, C: 1, instruction ptr: 4, output: 2,4,1,2,7,5
+cdv: opcode: 7, operand: 5 => 0, Registers: A: 26, B: 0, C: 26, instruction ptr: 6, output: 2,4,1,2,7,5
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 26, B: 3, C: 26, instruction ptr: 8, output: 2,4,1,2,7,5
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 26, B: 25, C: 26, instruction ptr: 10, output: 2,4,1,2,7,5
+out: opcode: 5, operand: 5 => 25, Registers: A: 26, B: 25, C: 26, instruction ptr: 12, output: 2,4,1,2,7,5,1
+adv: opcode: 0, operand: 3 => 3, Registers: A: 3, B: 25, C: 26, instruction ptr: 14, output: 2,4,1,2,7,5,1
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 3, B: 25, C: 26, instruction ptr: 0, output: 2,4,1,2,7,5,1
+bst: opcode: 2, operand: 4 => 3, Registers: A: 3, B: 3, C: 26, instruction ptr: 2, output: 2,4,1,2,7,5,1
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 3, B: 1, C: 26, instruction ptr: 4, output: 2,4,1,2,7,5,1
+cdv: opcode: 7, operand: 5 => 1, Registers: A: 3, B: 1, C: 1, instruction ptr: 6, output: 2,4,1,2,7,5,1
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 3, B: 2, C: 1, instruction ptr: 8, output: 2,4,1,2,7,5,1
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 3, B: 3, C: 1, instruction ptr: 10, output: 2,4,1,2,7,5,1
+out: opcode: 5, operand: 5 => 3, Registers: A: 3, B: 3, C: 1, instruction ptr: 12, output: 2,4,1,2,7,5,1,3
+adv: opcode: 0, operand: 3 => 3, Registers: A: 0, B: 3, C: 1, instruction ptr: 14, output: 2,4,1,2,7,5,1,3
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 0, B: 3, C: 1, instruction ptr: 16, output: 2,4,1,2,7,5,1,3
+
+Best matching length: 9, A: 912965108 (0x366A_BDF4 / 0b0011_0110_0110_1010_1011_1101_1111_0100)
+bst: opcode: 2, operand: 4 => 912965108, Registers: A: 912965108, B: 4, C: 0, instruction ptr: 2, output:
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 912965108, B: 6, C: 0, instruction ptr: 4, output:
+cdv: opcode: 7, operand: 5 => 6, Registers: A: 912965108, B: 6, C: 14265079, instruction ptr: 6, output:
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 912965108, B: 5, C: 14265079, instruction ptr: 8, output:
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 912965108, B: 14265074, C: 14265079, instruction ptr: 10, output:
+out: opcode: 5, operand: 5 => 14265074, Registers: A: 912965108, B: 14265074, C: 14265079, instruction ptr: 12, output: 2
+adv: opcode: 0, operand: 3 => 3, Registers: A: 114120638, B: 14265074, C: 14265079, instruction ptr: 14, output: 2
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 114120638, B: 14265074, C: 14265079, instruction ptr: 0, output: 2
+bst: opcode: 2, operand: 4 => 114120638, Registers: A: 114120638, B: 6, C: 14265079, instruction ptr: 2, output: 2
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 114120638, B: 4, C: 14265079, instruction ptr: 4, output: 2
+cdv: opcode: 7, operand: 5 => 4, Registers: A: 114120638, B: 4, C: 7132539, instruction ptr: 6, output: 2
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 114120638, B: 7, C: 7132539, instruction ptr: 8, output: 2
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 114120638, B: 7132540, C: 7132539, instruction ptr: 10, output: 2
+out: opcode: 5, operand: 5 => 7132540, Registers: A: 114120638, B: 7132540, C: 7132539, instruction ptr: 12, output: 2,4
+adv: opcode: 0, operand: 3 => 3, Registers: A: 14265079, B: 7132540, C: 7132539, instruction ptr: 14, output: 2,4
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 14265079, B: 7132540, C: 7132539, instruction ptr: 0, output: 2,4
+bst: opcode: 2, operand: 4 => 14265079, Registers: A: 14265079, B: 7, C: 7132539, instruction ptr: 2, output: 2,4
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 14265079, B: 5, C: 7132539, instruction ptr: 4, output: 2,4
+cdv: opcode: 7, operand: 5 => 5, Registers: A: 14265079, B: 5, C: 445783, instruction ptr: 6, output: 2,4
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 14265079, B: 6, C: 445783, instruction ptr: 8, output: 2,4
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 14265079, B: 445777, C: 445783, instruction ptr: 10, output: 2,4
+out: opcode: 5, operand: 5 => 445777, Registers: A: 14265079, B: 445777, C: 445783, instruction ptr: 12, output: 2,4,1
+adv: opcode: 0, operand: 3 => 3, Registers: A: 1783134, B: 445777, C: 445783, instruction ptr: 14, output: 2,4,1
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 1783134, B: 445777, C: 445783, instruction ptr: 0, output: 2,4,1
+bst: opcode: 2, operand: 4 => 1783134, Registers: A: 1783134, B: 6, C: 445783, instruction ptr: 2, output: 2,4,1
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 1783134, B: 4, C: 445783, instruction ptr: 4, output: 2,4,1
+cdv: opcode: 7, operand: 5 => 4, Registers: A: 1783134, B: 4, C: 111445, instruction ptr: 6, output: 2,4,1
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 1783134, B: 7, C: 111445, instruction ptr: 8, output: 2,4,1
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 1783134, B: 111442, C: 111445, instruction ptr: 10, output: 2,4,1
+out: opcode: 5, operand: 5 => 111442, Registers: A: 1783134, B: 111442, C: 111445, instruction ptr: 12, output: 2,4,1,2
+adv: opcode: 0, operand: 3 => 3, Registers: A: 222891, B: 111442, C: 111445, instruction ptr: 14, output: 2,4,1,2
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 222891, B: 111442, C: 111445, instruction ptr: 0, output: 2,4,1,2
+bst: opcode: 2, operand: 4 => 222891, Registers: A: 222891, B: 3, C: 111445, instruction ptr: 2, output: 2,4,1,2
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 222891, B: 1, C: 111445, instruction ptr: 4, output: 2,4,1,2
+cdv: opcode: 7, operand: 5 => 1, Registers: A: 222891, B: 1, C: 111445, instruction ptr: 6, output: 2,4,1,2
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 222891, B: 2, C: 111445, instruction ptr: 8, output: 2,4,1,2
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 222891, B: 111447, C: 111445, instruction ptr: 10, output: 2,4,1,2
+out: opcode: 5, operand: 5 => 111447, Registers: A: 222891, B: 111447, C: 111445, instruction ptr: 12, output: 2,4,1,2,7
+adv: opcode: 0, operand: 3 => 3, Registers: A: 27861, B: 111447, C: 111445, instruction ptr: 14, output: 2,4,1,2,7
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 27861, B: 111447, C: 111445, instruction ptr: 0, output: 2,4,1,2,7
+bst: opcode: 2, operand: 4 => 27861, Registers: A: 27861, B: 5, C: 111445, instruction ptr: 2, output: 2,4,1,2,7
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 27861, B: 7, C: 111445, instruction ptr: 4, output: 2,4,1,2,7
+cdv: opcode: 7, operand: 5 => 7, Registers: A: 27861, B: 7, C: 217, instruction ptr: 6, output: 2,4,1,2,7
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 27861, B: 4, C: 217, instruction ptr: 8, output: 2,4,1,2,7
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 27861, B: 221, C: 217, instruction ptr: 10, output: 2,4,1,2,7
+out: opcode: 5, operand: 5 => 221, Registers: A: 27861, B: 221, C: 217, instruction ptr: 12, output: 2,4,1,2,7,5
+adv: opcode: 0, operand: 3 => 3, Registers: A: 3482, B: 221, C: 217, instruction ptr: 14, output: 2,4,1,2,7,5
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 3482, B: 221, C: 217, instruction ptr: 0, output: 2,4,1,2,7,5
+bst: opcode: 2, operand: 4 => 3482, Registers: A: 3482, B: 2, C: 217, instruction ptr: 2, output: 2,4,1,2,7,5
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 3482, B: 0, C: 217, instruction ptr: 4, output: 2,4,1,2,7,5
+cdv: opcode: 7, operand: 5 => 0, Registers: A: 3482, B: 0, C: 3482, instruction ptr: 6, output: 2,4,1,2,7,5
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 3482, B: 3, C: 3482, instruction ptr: 8, output: 2,4,1,2,7,5
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 3482, B: 3481, C: 3482, instruction ptr: 10, output: 2,4,1,2,7,5
+out: opcode: 5, operand: 5 => 3481, Registers: A: 3482, B: 3481, C: 3482, instruction ptr: 12, output: 2,4,1,2,7,5,1
+adv: opcode: 0, operand: 3 => 3, Registers: A: 435, B: 3481, C: 3482, instruction ptr: 14, output: 2,4,1,2,7,5,1
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 435, B: 3481, C: 3482, instruction ptr: 0, output: 2,4,1,2,7,5,1
+bst: opcode: 2, operand: 4 => 435, Registers: A: 435, B: 3, C: 3482, instruction ptr: 2, output: 2,4,1,2,7,5,1
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 435, B: 1, C: 3482, instruction ptr: 4, output: 2,4,1,2,7,5,1
+cdv: opcode: 7, operand: 5 => 1, Registers: A: 435, B: 1, C: 217, instruction ptr: 6, output: 2,4,1,2,7,5,1
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 435, B: 2, C: 217, instruction ptr: 8, output: 2,4,1,2,7,5,1
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 435, B: 219, C: 217, instruction ptr: 10, output: 2,4,1,2,7,5,1
+out: opcode: 5, operand: 5 => 219, Registers: A: 435, B: 219, C: 217, instruction ptr: 12, output: 2,4,1,2,7,5,1,3
+adv: opcode: 0, operand: 3 => 3, Registers: A: 54, B: 219, C: 217, instruction ptr: 14, output: 2,4,1,2,7,5,1,3
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 54, B: 219, C: 217, instruction ptr: 0, output: 2,4,1,2,7,5,1,3
+bst: opcode: 2, operand: 4 => 54, Registers: A: 54, B: 6, C: 217, instruction ptr: 2, output: 2,4,1,2,7,5,1,3
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 54, B: 4, C: 217, instruction ptr: 4, output: 2,4,1,2,7,5,1,3
+cdv: opcode: 7, operand: 5 => 4, Registers: A: 54, B: 4, C: 3, instruction ptr: 6, output: 2,4,1,2,7,5,1,3
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 54, B: 7, C: 3, instruction ptr: 8, output: 2,4,1,2,7,5,1,3
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 54, B: 4, C: 3, instruction ptr: 10, output: 2,4,1,2,7,5,1,3
+out: opcode: 5, operand: 5 => 4, Registers: A: 54, B: 4, C: 3, instruction ptr: 12, output: 2,4,1,2,7,5,1,3,4
+adv: opcode: 0, operand: 3 => 3, Registers: A: 6, B: 4, C: 3, instruction ptr: 14, output: 2,4,1,2,7,5,1,3,4
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 6, B: 4, C: 3, instruction ptr: 0, output: 2,4,1,2,7,5,1,3,4
+bst: opcode: 2, operand: 4 => 6, Registers: A: 6, B: 6, C: 3, instruction ptr: 2, output: 2,4,1,2,7,5,1,3,4
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 6, B: 4, C: 3, instruction ptr: 4, output: 2,4,1,2,7,5,1,3,4
+cdv: opcode: 7, operand: 5 => 4, Registers: A: 6, B: 4, C: 0, instruction ptr: 6, output: 2,4,1,2,7,5,1,3,4
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 6, B: 7, C: 0, instruction ptr: 8, output: 2,4,1,2,7,5,1,3,4
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 6, B: 7, C: 0, instruction ptr: 10, output: 2,4,1,2,7,5,1,3,4
+out: opcode: 5, operand: 5 => 7, Registers: A: 6, B: 7, C: 0, instruction ptr: 12, output: 2,4,1,2,7,5,1,3,4,7
+
+Best matching length: 10, A: 1818934772 (0x6C6A_BDF4 / 0b0110_1100_0110_1010_1011_1101_1111_0100)
+bst: opcode: 2, operand: 4 => 1818934772, Registers: A: 1818934772, B: 4, C: 0, instruction ptr: 2, output:
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 1818934772, B: 6, C: 0, instruction ptr: 4, output:
+cdv: opcode: 7, operand: 5 => 6, Registers: A: 1818934772, B: 6, C: 28420855, instruction ptr: 6, output:
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 1818934772, B: 5, C: 28420855, instruction ptr: 8, output:
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 1818934772, B: 28420850, C: 28420855, instruction ptr: 10, output:
+out: opcode: 5, operand: 5 => 28420850, Registers: A: 1818934772, B: 28420850, C: 28420855, instruction ptr: 12, output: 2
+adv: opcode: 0, operand: 3 => 3, Registers: A: 227366846, B: 28420850, C: 28420855, instruction ptr: 14, output: 2
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 227366846, B: 28420850, C: 28420855, instruction ptr: 0, output: 2
+bst: opcode: 2, operand: 4 => 227366846, Registers: A: 227366846, B: 6, C: 28420855, instruction ptr: 2, output: 2
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 227366846, B: 4, C: 28420855, instruction ptr: 4, output: 2
+cdv: opcode: 7, operand: 5 => 4, Registers: A: 227366846, B: 4, C: 14210427, instruction ptr: 6, output: 2
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 227366846, B: 7, C: 14210427, instruction ptr: 8, output: 2
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 227366846, B: 14210428, C: 14210427, instruction ptr: 10, output: 2
+out: opcode: 5, operand: 5 => 14210428, Registers: A: 227366846, B: 14210428, C: 14210427, instruction ptr: 12, output: 2,4
+adv: opcode: 0, operand: 3 => 3, Registers: A: 28420855, B: 14210428, C: 14210427, instruction ptr: 14, output: 2,4
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 28420855, B: 14210428, C: 14210427, instruction ptr: 0, output: 2,4
+bst: opcode: 2, operand: 4 => 28420855, Registers: A: 28420855, B: 7, C: 14210427, instruction ptr: 2, output: 2,4
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 28420855, B: 5, C: 14210427, instruction ptr: 4, output: 2,4
+cdv: opcode: 7, operand: 5 => 5, Registers: A: 28420855, B: 5, C: 888151, instruction ptr: 6, output: 2,4
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 28420855, B: 6, C: 888151, instruction ptr: 8, output: 2,4
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 28420855, B: 888145, C: 888151, instruction ptr: 10, output: 2,4
+out: opcode: 5, operand: 5 => 888145, Registers: A: 28420855, B: 888145, C: 888151, instruction ptr: 12, output: 2,4,1
+adv: opcode: 0, operand: 3 => 3, Registers: A: 3552606, B: 888145, C: 888151, instruction ptr: 14, output: 2,4,1
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 3552606, B: 888145, C: 888151, instruction ptr: 0, output: 2,4,1
+bst: opcode: 2, operand: 4 => 3552606, Registers: A: 3552606, B: 6, C: 888151, instruction ptr: 2, output: 2,4,1
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 3552606, B: 4, C: 888151, instruction ptr: 4, output: 2,4,1
+cdv: opcode: 7, operand: 5 => 4, Registers: A: 3552606, B: 4, C: 222037, instruction ptr: 6, output: 2,4,1
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 3552606, B: 7, C: 222037, instruction ptr: 8, output: 2,4,1
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 3552606, B: 222034, C: 222037, instruction ptr: 10, output: 2,4,1
+out: opcode: 5, operand: 5 => 222034, Registers: A: 3552606, B: 222034, C: 222037, instruction ptr: 12, output: 2,4,1,2
+adv: opcode: 0, operand: 3 => 3, Registers: A: 444075, B: 222034, C: 222037, instruction ptr: 14, output: 2,4,1,2
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 444075, B: 222034, C: 222037, instruction ptr: 0, output: 2,4,1,2
+bst: opcode: 2, operand: 4 => 444075, Registers: A: 444075, B: 3, C: 222037, instruction ptr: 2, output: 2,4,1,2
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 444075, B: 1, C: 222037, instruction ptr: 4, output: 2,4,1,2
+cdv: opcode: 7, operand: 5 => 1, Registers: A: 444075, B: 1, C: 222037, instruction ptr: 6, output: 2,4,1,2
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 444075, B: 2, C: 222037, instruction ptr: 8, output: 2,4,1,2
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 444075, B: 222039, C: 222037, instruction ptr: 10, output: 2,4,1,2
+out: opcode: 5, operand: 5 => 222039, Registers: A: 444075, B: 222039, C: 222037, instruction ptr: 12, output: 2,4,1,2,7
+adv: opcode: 0, operand: 3 => 3, Registers: A: 55509, B: 222039, C: 222037, instruction ptr: 14, output: 2,4,1,2,7
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 55509, B: 222039, C: 222037, instruction ptr: 0, output: 2,4,1,2,7
+bst: opcode: 2, operand: 4 => 55509, Registers: A: 55509, B: 5, C: 222037, instruction ptr: 2, output: 2,4,1,2,7
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 55509, B: 7, C: 222037, instruction ptr: 4, output: 2,4,1,2,7
+cdv: opcode: 7, operand: 5 => 7, Registers: A: 55509, B: 7, C: 433, instruction ptr: 6, output: 2,4,1,2,7
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 55509, B: 4, C: 433, instruction ptr: 8, output: 2,4,1,2,7
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 55509, B: 437, C: 433, instruction ptr: 10, output: 2,4,1,2,7
+out: opcode: 5, operand: 5 => 437, Registers: A: 55509, B: 437, C: 433, instruction ptr: 12, output: 2,4,1,2,7,5
+adv: opcode: 0, operand: 3 => 3, Registers: A: 6938, B: 437, C: 433, instruction ptr: 14, output: 2,4,1,2,7,5
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 6938, B: 437, C: 433, instruction ptr: 0, output: 2,4,1,2,7,5
+bst: opcode: 2, operand: 4 => 6938, Registers: A: 6938, B: 2, C: 433, instruction ptr: 2, output: 2,4,1,2,7,5
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 6938, B: 0, C: 433, instruction ptr: 4, output: 2,4,1,2,7,5
+cdv: opcode: 7, operand: 5 => 0, Registers: A: 6938, B: 0, C: 6938, instruction ptr: 6, output: 2,4,1,2,7,5
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 6938, B: 3, C: 6938, instruction ptr: 8, output: 2,4,1,2,7,5
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 6938, B: 6937, C: 6938, instruction ptr: 10, output: 2,4,1,2,7,5
+out: opcode: 5, operand: 5 => 6937, Registers: A: 6938, B: 6937, C: 6938, instruction ptr: 12, output: 2,4,1,2,7,5,1
+adv: opcode: 0, operand: 3 => 3, Registers: A: 867, B: 6937, C: 6938, instruction ptr: 14, output: 2,4,1,2,7,5,1
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 867, B: 6937, C: 6938, instruction ptr: 0, output: 2,4,1,2,7,5,1
+bst: opcode: 2, operand: 4 => 867, Registers: A: 867, B: 3, C: 6938, instruction ptr: 2, output: 2,4,1,2,7,5,1
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 867, B: 1, C: 6938, instruction ptr: 4, output: 2,4,1,2,7,5,1
+cdv: opcode: 7, operand: 5 => 1, Registers: A: 867, B: 1, C: 433, instruction ptr: 6, output: 2,4,1,2,7,5,1
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 867, B: 2, C: 433, instruction ptr: 8, output: 2,4,1,2,7,5,1
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 867, B: 435, C: 433, instruction ptr: 10, output: 2,4,1,2,7,5,1
+out: opcode: 5, operand: 5 => 435, Registers: A: 867, B: 435, C: 433, instruction ptr: 12, output: 2,4,1,2,7,5,1,3
+adv: opcode: 0, operand: 3 => 3, Registers: A: 108, B: 435, C: 433, instruction ptr: 14, output: 2,4,1,2,7,5,1,3
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 108, B: 435, C: 433, instruction ptr: 0, output: 2,4,1,2,7,5,1,3
+bst: opcode: 2, operand: 4 => 108, Registers: A: 108, B: 4, C: 433, instruction ptr: 2, output: 2,4,1,2,7,5,1,3
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 108, B: 6, C: 433, instruction ptr: 4, output: 2,4,1,2,7,5,1,3
+cdv: opcode: 7, operand: 5 => 6, Registers: A: 108, B: 6, C: 1, instruction ptr: 6, output: 2,4,1,2,7,5,1,3
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 108, B: 5, C: 1, instruction ptr: 8, output: 2,4,1,2,7,5,1,3
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 108, B: 4, C: 1, instruction ptr: 10, output: 2,4,1,2,7,5,1,3
+out: opcode: 5, operand: 5 => 4, Registers: A: 108, B: 4, C: 1, instruction ptr: 12, output: 2,4,1,2,7,5,1,3,4
+adv: opcode: 0, operand: 3 => 3, Registers: A: 13, B: 4, C: 1, instruction ptr: 14, output: 2,4,1,2,7,5,1,3,4
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 13, B: 4, C: 1, instruction ptr: 0, output: 2,4,1,2,7,5,1,3,4
+bst: opcode: 2, operand: 4 => 13, Registers: A: 13, B: 5, C: 1, instruction ptr: 2, output: 2,4,1,2,7,5,1,3,4
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 13, B: 7, C: 1, instruction ptr: 4, output: 2,4,1,2,7,5,1,3,4
+cdv: opcode: 7, operand: 5 => 7, Registers: A: 13, B: 7, C: 0, instruction ptr: 6, output: 2,4,1,2,7,5,1,3,4
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 13, B: 4, C: 0, instruction ptr: 8, output: 2,4,1,2,7,5,1,3,4
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 13, B: 4, C: 0, instruction ptr: 10, output: 2,4,1,2,7,5,1,3,4
+out: opcode: 5, operand: 5 => 4, Registers: A: 13, B: 4, C: 0, instruction ptr: 12, output: 2,4,1,2,7,5,1,3,4,4
+adv: opcode: 0, operand: 3 => 3, Registers: A: 1, B: 4, C: 0, instruction ptr: 14, output: 2,4,1,2,7,5,1,3,4,4
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 1, B: 4, C: 0, instruction ptr: 0, output: 2,4,1,2,7,5,1,3,4,4
+bst: opcode: 2, operand: 4 => 1, Registers: A: 1, B: 1, C: 0, instruction ptr: 2, output: 2,4,1,2,7,5,1,3,4,4
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 1, B: 3, C: 0, instruction ptr: 4, output: 2,4,1,2,7,5,1,3,4,4
+cdv: opcode: 7, operand: 5 => 3, Registers: A: 1, B: 3, C: 0, instruction ptr: 6, output: 2,4,1,2,7,5,1,3,4,4
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 1, B: 0, C: 0, instruction ptr: 8, output: 2,4,1,2,7,5,1,3,4,4
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 1, B: 0, C: 0, instruction ptr: 10, output: 2,4,1,2,7,5,1,3,4,4
+out: opcode: 5, operand: 5 => 0, Registers: A: 1, B: 0, C: 0, instruction ptr: 12, output: 2,4,1,2,7,5,1,3,4,4,0
+
+Best matching length: 12, A: 281516691865076 (0x1_0009_B66A_BDF4 / 0b0001_0000_0000_0000_1001_1011_0110_0110_1010_1011_1101_1111_0100)
+bst: opcode: 2, operand: 4 => 281516691865076, Registers: A: 281516691865076, B: 4, C: 0, instruction ptr: 2, output:
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 281516691865076, B: 6, C: 0, instruction ptr: 4, output:
+cdv: opcode: 7, operand: 5 => 6, Registers: A: 281516691865076, B: 6, C: 4398698310391, instruction ptr: 6, output:
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 281516691865076, B: 5, C: 4398698310391, instruction ptr: 8, output:
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 281516691865076, B: 4398698310386, C: 4398698310391, instruction ptr: 10, output:
+out: opcode: 5, operand: 5 => 4398698310386, Registers: A: 281516691865076, B: 4398698310386, C: 4398698310391, instruction ptr: 12, output: 2
+adv: opcode: 0, operand: 3 => 3, Registers: A: 35189586483134, B: 4398698310386, C: 4398698310391, instruction ptr: 14, output: 2
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 35189586483134, B: 4398698310386, C: 4398698310391, instruction ptr: 0, output: 2
+bst: opcode: 2, operand: 4 => 35189586483134, Registers: A: 35189586483134, B: 6, C: 4398698310391, instruction ptr: 2, output: 2
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 35189586483134, B: 4, C: 4398698310391, instruction ptr: 4, output: 2
+cdv: opcode: 7, operand: 5 => 4, Registers: A: 35189586483134, B: 4, C: 2199349155195, instruction ptr: 6, output: 2
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 35189586483134, B: 7, C: 2199349155195, instruction ptr: 8, output: 2
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 35189586483134, B: 2199349155196, C: 2199349155195, instruction ptr: 10, output: 2
+out: opcode: 5, operand: 5 => 2199349155196, Registers: A: 35189586483134, B: 2199349155196, C: 2199349155195, instruction ptr: 12, output: 2,4
+adv: opcode: 0, operand: 3 => 3, Registers: A: 4398698310391, B: 2199349155196, C: 2199349155195, instruction ptr: 14, output: 2,4
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 4398698310391, B: 2199349155196, C: 2199349155195, instruction ptr: 0, output: 2,4
+bst: opcode: 2, operand: 4 => 4398698310391, Registers: A: 4398698310391, B: 7, C: 2199349155195, instruction ptr: 2, output: 2,4
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 4398698310391, B: 5, C: 2199349155195, instruction ptr: 4, output: 2,4
+cdv: opcode: 7, operand: 5 => 5, Registers: A: 4398698310391, B: 5, C: 137459322199, instruction ptr: 6, output: 2,4
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 4398698310391, B: 6, C: 137459322199, instruction ptr: 8, output: 2,4
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 4398698310391, B: 137459322193, C: 137459322199, instruction ptr: 10, output: 2,4
+out: opcode: 5, operand: 5 => 137459322193, Registers: A: 4398698310391, B: 137459322193, C: 137459322199, instruction ptr: 12, output: 2,4,1
+adv: opcode: 0, operand: 3 => 3, Registers: A: 549837288798, B: 137459322193, C: 137459322199, instruction ptr: 14, output: 2,4,1
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 549837288798, B: 137459322193, C: 137459322199, instruction ptr: 0, output: 2,4,1
+bst: opcode: 2, operand: 4 => 549837288798, Registers: A: 549837288798, B: 6, C: 137459322199, instruction ptr: 2, output: 2,4,1
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 549837288798, B: 4, C: 137459322199, instruction ptr: 4, output: 2,4,1
+cdv: opcode: 7, operand: 5 => 4, Registers: A: 549837288798, B: 4, C: 34364830549, instruction ptr: 6, output: 2,4,1
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 549837288798, B: 7, C: 34364830549, instruction ptr: 8, output: 2,4,1
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 549837288798, B: 34364830546, C: 34364830549, instruction ptr: 10, output: 2,4,1
+out: opcode: 5, operand: 5 => 34364830546, Registers: A: 549837288798, B: 34364830546, C: 34364830549, instruction ptr: 12, output: 2,4,1,2
+adv: opcode: 0, operand: 3 => 3, Registers: A: 68729661099, B: 34364830546, C: 34364830549, instruction ptr: 14, output: 2,4,1,2
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 68729661099, B: 34364830546, C: 34364830549, instruction ptr: 0, output: 2,4,1,2
+bst: opcode: 2, operand: 4 => 68729661099, Registers: A: 68729661099, B: 3, C: 34364830549, instruction ptr: 2, output: 2,4,1,2
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 68729661099, B: 1, C: 34364830549, instruction ptr: 4, output: 2,4,1,2
+cdv: opcode: 7, operand: 5 => 1, Registers: A: 68729661099, B: 1, C: 34364830549, instruction ptr: 6, output: 2,4,1,2
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 68729661099, B: 2, C: 34364830549, instruction ptr: 8, output: 2,4,1,2
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 68729661099, B: 34364830551, C: 34364830549, instruction ptr: 10, output: 2,4,1,2
+out: opcode: 5, operand: 5 => 34364830551, Registers: A: 68729661099, B: 34364830551, C: 34364830549, instruction ptr: 12, output: 2,4,1,2,7
+adv: opcode: 0, operand: 3 => 3, Registers: A: 8591207637, B: 34364830551, C: 34364830549, instruction ptr: 14, output: 2,4,1,2,7
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 8591207637, B: 34364830551, C: 34364830549, instruction ptr: 0, output: 2,4,1,2,7
+bst: opcode: 2, operand: 4 => 8591207637, Registers: A: 8591207637, B: 5, C: 34364830549, instruction ptr: 2, output: 2,4,1,2,7
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 8591207637, B: 7, C: 34364830549, instruction ptr: 4, output: 2,4,1,2,7
+cdv: opcode: 7, operand: 5 => 7, Registers: A: 8591207637, B: 7, C: 67118809, instruction ptr: 6, output: 2,4,1,2,7
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 8591207637, B: 4, C: 67118809, instruction ptr: 8, output: 2,4,1,2,7
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 8591207637, B: 67118813, C: 67118809, instruction ptr: 10, output: 2,4,1,2,7
+out: opcode: 5, operand: 5 => 67118813, Registers: A: 8591207637, B: 67118813, C: 67118809, instruction ptr: 12, output: 2,4,1,2,7,5
+adv: opcode: 0, operand: 3 => 3, Registers: A: 1073900954, B: 67118813, C: 67118809, instruction ptr: 14, output: 2,4,1,2,7,5
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 1073900954, B: 67118813, C: 67118809, instruction ptr: 0, output: 2,4,1,2,7,5
+bst: opcode: 2, operand: 4 => 1073900954, Registers: A: 1073900954, B: 2, C: 67118809, instruction ptr: 2, output: 2,4,1,2,7,5
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 1073900954, B: 0, C: 67118809, instruction ptr: 4, output: 2,4,1,2,7,5
+cdv: opcode: 7, operand: 5 => 0, Registers: A: 1073900954, B: 0, C: 1073900954, instruction ptr: 6, output: 2,4,1,2,7,5
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 1073900954, B: 3, C: 1073900954, instruction ptr: 8, output: 2,4,1,2,7,5
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 1073900954, B: 1073900953, C: 1073900954, instruction ptr: 10, output: 2,4,1,2,7,5
+out: opcode: 5, operand: 5 => 1073900953, Registers: A: 1073900954, B: 1073900953, C: 1073900954, instruction ptr: 12, output: 2,4,1,2,7,5,1
+adv: opcode: 0, operand: 3 => 3, Registers: A: 134237619, B: 1073900953, C: 1073900954, instruction ptr: 14, output: 2,4,1,2,7,5,1
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 134237619, B: 1073900953, C: 1073900954, instruction ptr: 0, output: 2,4,1,2,7,5,1
+bst: opcode: 2, operand: 4 => 134237619, Registers: A: 134237619, B: 3, C: 1073900954, instruction ptr: 2, output: 2,4,1,2,7,5,1
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 134237619, B: 1, C: 1073900954, instruction ptr: 4, output: 2,4,1,2,7,5,1
+cdv: opcode: 7, operand: 5 => 1, Registers: A: 134237619, B: 1, C: 67118809, instruction ptr: 6, output: 2,4,1,2,7,5,1
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 134237619, B: 2, C: 67118809, instruction ptr: 8, output: 2,4,1,2,7,5,1
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 134237619, B: 67118811, C: 67118809, instruction ptr: 10, output: 2,4,1,2,7,5,1
+out: opcode: 5, operand: 5 => 67118811, Registers: A: 134237619, B: 67118811, C: 67118809, instruction ptr: 12, output: 2,4,1,2,7,5,1,3
+adv: opcode: 0, operand: 3 => 3, Registers: A: 16779702, B: 67118811, C: 67118809, instruction ptr: 14, output: 2,4,1,2,7,5,1,3
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 16779702, B: 67118811, C: 67118809, instruction ptr: 0, output: 2,4,1,2,7,5,1,3
+bst: opcode: 2, operand: 4 => 16779702, Registers: A: 16779702, B: 6, C: 67118809, instruction ptr: 2, output: 2,4,1,2,7,5,1,3
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 16779702, B: 4, C: 67118809, instruction ptr: 4, output: 2,4,1,2,7,5,1,3
+cdv: opcode: 7, operand: 5 => 4, Registers: A: 16779702, B: 4, C: 1048731, instruction ptr: 6, output: 2,4,1,2,7,5,1,3
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 16779702, B: 7, C: 1048731, instruction ptr: 8, output: 2,4,1,2,7,5,1,3
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 16779702, B: 1048732, C: 1048731, instruction ptr: 10, output: 2,4,1,2,7,5,1,3
+out: opcode: 5, operand: 5 => 1048732, Registers: A: 16779702, B: 1048732, C: 1048731, instruction ptr: 12, output: 2,4,1,2,7,5,1,3,4
+adv: opcode: 0, operand: 3 => 3, Registers: A: 2097462, B: 1048732, C: 1048731, instruction ptr: 14, output: 2,4,1,2,7,5,1,3,4
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 2097462, B: 1048732, C: 1048731, instruction ptr: 0, output: 2,4,1,2,7,5,1,3,4
+bst: opcode: 2, operand: 4 => 2097462, Registers: A: 2097462, B: 6, C: 1048731, instruction ptr: 2, output: 2,4,1,2,7,5,1,3,4
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 2097462, B: 4, C: 1048731, instruction ptr: 4, output: 2,4,1,2,7,5,1,3,4
+cdv: opcode: 7, operand: 5 => 4, Registers: A: 2097462, B: 4, C: 131091, instruction ptr: 6, output: 2,4,1,2,7,5,1,3,4
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 2097462, B: 7, C: 131091, instruction ptr: 8, output: 2,4,1,2,7,5,1,3,4
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 2097462, B: 131092, C: 131091, instruction ptr: 10, output: 2,4,1,2,7,5,1,3,4
+out: opcode: 5, operand: 5 => 131092, Registers: A: 2097462, B: 131092, C: 131091, instruction ptr: 12, output: 2,4,1,2,7,5,1,3,4,4
+adv: opcode: 0, operand: 3 => 3, Registers: A: 262182, B: 131092, C: 131091, instruction ptr: 14, output: 2,4,1,2,7,5,1,3,4,4
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 262182, B: 131092, C: 131091, instruction ptr: 0, output: 2,4,1,2,7,5,1,3,4,4
+bst: opcode: 2, operand: 4 => 262182, Registers: A: 262182, B: 6, C: 131091, instruction ptr: 2, output: 2,4,1,2,7,5,1,3,4,4
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 262182, B: 4, C: 131091, instruction ptr: 4, output: 2,4,1,2,7,5,1,3,4,4
+cdv: opcode: 7, operand: 5 => 4, Registers: A: 262182, B: 4, C: 16386, instruction ptr: 6, output: 2,4,1,2,7,5,1,3,4,4
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 262182, B: 7, C: 16386, instruction ptr: 8, output: 2,4,1,2,7,5,1,3,4,4
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 262182, B: 16389, C: 16386, instruction ptr: 10, output: 2,4,1,2,7,5,1,3,4,4
+out: opcode: 5, operand: 5 => 16389, Registers: A: 262182, B: 16389, C: 16386, instruction ptr: 12, output: 2,4,1,2,7,5,1,3,4,4,5
+adv: opcode: 0, operand: 3 => 3, Registers: A: 32772, B: 16389, C: 16386, instruction ptr: 14, output: 2,4,1,2,7,5,1,3,4,4,5
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 32772, B: 16389, C: 16386, instruction ptr: 0, output: 2,4,1,2,7,5,1,3,4,4,5
+bst: opcode: 2, operand: 4 => 32772, Registers: A: 32772, B: 4, C: 16386, instruction ptr: 2, output: 2,4,1,2,7,5,1,3,4,4,5
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 32772, B: 6, C: 16386, instruction ptr: 4, output: 2,4,1,2,7,5,1,3,4,4,5
+cdv: opcode: 7, operand: 5 => 6, Registers: A: 32772, B: 6, C: 512, instruction ptr: 6, output: 2,4,1,2,7,5,1,3,4,4,5
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 32772, B: 5, C: 512, instruction ptr: 8, output: 2,4,1,2,7,5,1,3,4,4,5
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 32772, B: 517, C: 512, instruction ptr: 10, output: 2,4,1,2,7,5,1,3,4,4,5
+out: opcode: 5, operand: 5 => 517, Registers: A: 32772, B: 517, C: 512, instruction ptr: 12, output: 2,4,1,2,7,5,1,3,4,4,5,5
+adv: opcode: 0, operand: 3 => 3, Registers: A: 4096, B: 517, C: 512, instruction ptr: 14, output: 2,4,1,2,7,5,1,3,4,4,5,5
+jnz: opcode: 3, operand: 0 => 0, Registers: A: 4096, B: 517, C: 512, instruction ptr: 0, output: 2,4,1,2,7,5,1,3,4,4,5,5
+bst: opcode: 2, operand: 4 => 4096, Registers: A: 4096, B: 0, C: 512, instruction ptr: 2, output: 2,4,1,2,7,5,1,3,4,4,5,5
+bxl: opcode: 1, operand: 2 => 2, Registers: A: 4096, B: 2, C: 512, instruction ptr: 4, output: 2,4,1,2,7,5,1,3,4,4,5,5
+cdv: opcode: 7, operand: 5 => 2, Registers: A: 4096, B: 2, C: 1024, instruction ptr: 6, output: 2,4,1,2,7,5,1,3,4,4,5,5
+bxl: opcode: 1, operand: 3 => 3, Registers: A: 4096, B: 1, C: 1024, instruction ptr: 8, output: 2,4,1,2,7,5,1,3,4,4,5,5
+bxc: opcode: 4, operand: 4 => 4, Registers: A: 4096, B: 1025, C: 1024, instruction ptr: 10, output: 2,4,1,2,7,5,1,3,4,4,5,5
+out: opcode: 5, operand: 5 => 1025, Registers: A: 4096, B: 1025, C: 1024, instruction ptr: 12, output: 2,4,1,2,7,5,1,3,4,4,5,5,1
+
+some patterns matching output length: 2:
+
+Matching length: 2, A: 0x059B63EC 0b00000101100110110110001111101100
+Matching length: 2, A: 0x059B65F4 0b00000101100110110110010111110100
+Matching length: 2, A: 0x059B670D 0b00000101100110110110011100001101
+Matching length: 2, A: 0x059B69F4 0b00000101100110110110100111110100
+Matching length: 2, A: 0x059B6B0D 0b00000101100110110110101100001101
+Matching length: 2, A: 0x059B6DF4 0b00000101100110110110110111110100
+Matching length: 2, A: 0x059B6F0D 0b00000101100110110110111100001101
+Matching length: 2, A: 0x059B71F4 0b00000101100110110111000111110100
+Matching length: 2, A: 0x059B730D 0b00000101100110110111001100001101
+Matching length: 2, A: 0x059B7325 0b00000101100110110111001100100101
+Matching length: 2, A: 0x059B7365 0b00000101100110110111001101100101
+Matching length: 2, A: 0x059B73E4 0b00000101100110110111001111100100
+Matching length: 2, A: 0x059B75F4 0b00000101100110110111010111110100
+Matching length: 2, A: 0x059B770D 0b00000101100110110111011100001101
+Matching length: 2, A: 0x059B7B0D 0b00000101100110110111101100001101
+Matching length: 2, A: 0x059B7F0D 0b00000101100110110111111100001101
+Matching length: 2, A: 0x059B81EC 0b00000101100110111000000111101100
+Matching length: 2, A: 0x059B81F4 0b00000101100110111000000111110100
+Matching length: 2, A: 0x059B830D 0b00000101100110111000001100001101
+Matching length: 2, A: 0x059B8325 0b00000101100110111000001100100101
+Matching length: 2, A: 0x059B832D 0b00000101100110111000001100101101
+Matching length: 2, A: 0x059B8365 0b00000101100110111000001101100101
+Matching length: 2, A: 0x059B836D 0b00000101100110111000001101101101
+Matching length: 2, A: 0x059B83E4 0b00000101100110111000001111100100
+Matching length: 2, A: 0x059B83EC 0b00000101100110111000001111101100
+
+some patterns matching output length: 4:
+
+Matching length: 4, A: 0x0000A365 0b00000000000000001010001101100101
+Matching length: 4, A: 0x0000A36D 0b00000000000000001010001101101101
+Matching length: 4, A: 0x0001A365 0b00000000000000011010001101100101
+Matching length: 4, A: 0x0001A36D 0b00000000000000011010001101101101
+Matching length: 4, A: 0x0002A365 0b00000000000000101010001101100101
+Matching length: 4, A: 0x0002A36D 0b00000000000000101010001101101101
+Matching length: 4, A: 0x0003A365 0b00000000000000111010001101100101
+Matching length: 4, A: 0x0003A36D 0b00000000000000111010001101101101
+Matching length: 4, A: 0x0004A365 0b00000000000001001010001101100101
+Matching length: 4, A: 0x0004A36D 0b00000000000001001010001101101101
+Matching length: 4, A: 0x0005A365 0b00000000000001011010001101100101
+Matching length: 4, A: 0x0005A36D 0b00000000000001011010001101101101
+Matching length: 4, A: 0x00064B0D 0b00000000000001100100101100001101
+Matching length: 4, A: 0x0006A365 0b00000000000001101010001101100101
+Matching length: 4, A: 0x0006A36D 0b00000000000001101010001101101101
+Matching length: 4, A: 0x0006CB0D 0b00000000000001101100101100001101
+Matching length: 4, A: 0x0007A365 0b00000000000001111010001101100101
+Matching length: 4, A: 0x0007A36D 0b00000000000001111010001101101101
+Matching length: 4, A: 0x0007F9F4 0b00000000000001111111100111110100
+Matching length: 4, A: 0x0008A365 0b00000000000010001010001101100101
+Matching length: 4, A: 0x0008A36D 0b00000000000010001010001101101101
+Matching length: 4, A: 0x0009A365 0b00000000000010011010001101100101
+Matching length: 4, A: 0x0009A36D 0b00000000000010011010001101101101
+Matching length: 4, A: 0x000AA365 0b00000000000010101010001101100101
+Matching length: 4, A: 0x000AA36D 0b00000000000010101010001101101101
+Matching length: 4, A: 0x000BA365 0b00000000000010111010001101100101
+Matching length: 4, A: 0x000BA36D 0b00000000000010111010001101101101
+Matching length: 4, A: 0x000BF9F4 0b00000000000010111111100111110100
+Matching length: 4, A: 0x000CA365 0b00000000000011001010001101100101
+Matching length: 4, A: 0x000CA36D 0b00000000000011001010001101101101
+Matching length: 4, A: 0x000DA365 0b00000000000011011010001101100101
+Matching length: 4, A: 0x000DA36D 0b00000000000011011010001101101101
+Matching length: 4, A: 0x000E4B0D 0b00000000000011100100101100001101
+Matching length: 4, A: 0x000EA365 0b00000000000011101010001101100101
+Matching length: 4, A: 0x000EA36D 0b00000000000011101010001101101101
+Matching length: 4, A: 0x000ECB0D 0b00000000000011101100101100001101
+Matching length: 4, A: 0x000FA365 0b00000000000011111010001101100101
+Matching length: 4, A: 0x000FA36D 0b00000000000011111010001101101101
+Matching length: 4, A: 0x000FF9F4 0b00000000000011111111100111110100
+Matching length: 4, A: 0x0010A365 0b00000000000100001010001101100101
+Matching length: 4, A: 0x0010A36D 0b00000000000100001010001101101101
+Matching length: 4, A: 0x0011A365 0b00000000000100011010001101100101
+Matching length: 4, A: 0x0011A36D 0b00000000000100011010001101101101
+Matching length: 4, A: 0x0012A365 0b00000000000100101010001101100101
+Matching length: 4, A: 0x0012A36D 0b00000000000100101010001101101101
+Matching length: 4, A: 0x0013A365 0b00000000000100111010001101100101
+Matching length: 4, A: 0x0013A36D 0b00000000000100111010001101101101
+Matching length: 4, A: 0x0014A365 0b00000000000101001010001101100101
+Matching length: 4, A: 0x0014A36D 0b00000000000101001010001101101101
+Matching length: 4, A: 0x0015A365 0b00000000000101011010001101100101
+Matching length: 4, A: 0x0015A36D 0b00000000000101011010001101101101
+Matching length: 4, A: 0x00164B0D 0b00000000000101100100101100001101
+Matching length: 4, A: 0x0016A365 0b00000000000101101010001101100101
+Matching length: 4, A: 0x0016A36D 0b00000000000101101010001101101101
+Matching length: 4, A: 0x0016CB0D 0b00000000000101101100101100001101
+Matching length: 4, A: 0x0017A365 0b00000000000101111010001101100101
+Matching length: 4, A: 0x0017A36D 0b00000000000101111010001101101101
+
+Matching length: 4, A: 0x1204AA365 0b100100000010010101010001101100101
+Matching length: 4, A: 0x1204AA36D 0b100100000010010101010001101101101
+Matching length: 4, A: 0x1204BA365 0b100100000010010111010001101100101
+Matching length: 4, A: 0x1204BA36D 0b100100000010010111010001101101101
+Matching length: 4, A: 0x1204BF9F4 0b100100000010010111111100111110100
+Matching length: 4, A: 0x1204CA365 0b100100000010011001010001101100101
+Matching length: 4, A: 0x1204CA36D 0b100100000010011001010001101101101
+Matching length: 4, A: 0x1204DA365 0b100100000010011011010001101100101
+Matching length: 4, A: 0x1204DA36D 0b100100000010011011010001101101101
+Matching length: 4, A: 0x1204E4B0D 0b100100000010011100100101100001101
+Matching length: 4, A: 0x1204EA365 0b100100000010011101010001101100101
+Matching length: 4, A: 0x1204EA36D 0b100100000010011101010001101101101
+Matching length: 4, A: 0x1204ECB0D 0b100100000010011101100101100001101
+Matching length: 4, A: 0x1204FA365 0b100100000010011111010001101100101
+Matching length: 4, A: 0x1204FA36D 0b100100000010011111010001101101101
+Matching length: 4, A: 0x1204FF9F4 0b100100000010011111111100111110100
+Matching length: 4, A: 0x12050A365 0b100100000010100001010001101100101
+Matching length: 4, A: 0x12050A36D 0b100100000010100001010001101101101
+Matching length: 4, A: 0x12051A365 0b100100000010100011010001101100101
+Matching length: 4, A: 0x12051A36D 0b100100000010100011010001101101101
+Matching length: 4, A: 0x12052A365 0b100100000010100101010001101100101
+Matching length: 4, A: 0x12052A36D 0b100100000010100101010001101101101
+Matching length: 4, A: 0x12053A365 0b100100000010100111010001101100101
+Matching length: 4, A: 0x12053A36D 0b100100000010100111010001101101101
+Matching length: 4, A: 0x12054A365 0b100100000010101001010001101100101
+Matching length: 4, A: 0x12054A36D 0b100100000010101001010001101101101
+Matching length: 4, A: 0x12055A365 0b100100000010101011010001101100101
+Matching length: 4, A: 0x12055A36D 0b100100000010101011010001101101101
+Matching length: 4, A: 0x120564B0D 0b100100000010101100100101100001101
+
+some patterns for matching output length >= 8:
+
+Matching length: 8,  A: 0x006ABDF4 0b00000000011010101011110111110100
+Matching length: 8,  A: 0x026ABDF4 0b00000010011010101011110111110100
+Matching length: 8,  A: 0x046ABDF4 0b00000100011010101011110111110100
+Matching length: 8,  A: 0x0472BDF4 0b00000100011100101011110111110100
+Matching length: 8,  A: 0x066ABDF4 0b00000110011010101011110111110100
+Matching length: 8,  A: 0x086ABDF4 0b00001000011010101011110111110100
+Matching length: 8,  A: 0x0A6ABDF4 0b00001010011010101011110111110100
+Matching length: 8,  A: 0x0A74BDF4 0b00001010011101001011110111110100
+Matching length: 8,  A: 0x0A76BDF4 0b00001010011101101011110111110100
+Matching length: 8,  A: 0x0B34BDF4 0b00001011001101001011110111110100
+
+Matching length: 8,  A: 0x0B37B9F4 0b00001011001101111011100111110100
+
+Matching length: 8,  A: 0x0B37BDF4 0b00001011001101111011110111110100
+Matching length: 8,  A: 0x0C6ABDF4 0b00001100011010101011110111110100
+Matching length: 8,  A: 0x0C72BDF4 0b00001100011100101011110111110100
+Matching length: 8,  A: 0x0E6ABDF4 0b00001110011010101011110111110100
+Matching length: 8,  A: 0x106ABDF4 0b00010000011010101011110111110100
+Matching length: 8,  A: 0x126ABDF4 0b00010010011010101011110111110100
+Matching length: 8,  A: 0x146ABDF4 0b00010100011010101011110111110100
+Matching length: 8,  A: 0x1472BDF4 0b00010100011100101011110111110100
+Matching length: 8,  A: 0x166ABDF4 0b00010110011010101011110111110100
+Matching length: 8,  A: 0x186ABDF4 0b00011000011010101011110111110100
+Matching length: 8,  A: 0x1A6ABDF4 0b00011010011010101011110111110100
+Matching length: 8,  A: 0x1A74BDF4 0b00011010011101001011110111110100
+Matching length: 8,  A: 0x1A76BDF4 0b00011010011101101011110111110100
+Matching length: 8,  A: 0x1B34BDF4 0b00011011001101001011110111110100
+
+Matching length: 8,  A: 0x1B37B9F4 0b00011011001101111011100111110100
+
+Matching length: 8,  A: 0x1B37BDF4 0b00011011001101111011110111110100
+Matching length: 8,  A: 0x1C6ABDF4 0b00011100011010101011110111110100
+Matching length: 8,  A: 0x1C72BDF4 0b00011100011100101011110111110100
+Matching length: 8,  A: 0x1E6ABDF4 0b00011110011010101011110111110100
+Matching length: 8,  A: 0x206ABDF4 0b00100000011010101011110111110100
+Matching length: 8,  A: 0x226ABDF4 0b00100010011010101011110111110100
+Matching length: 8,  A: 0x246ABDF4 0b00100100011010101011110111110100
+Matching length: 8,  A: 0x2472BDF4 0b00100100011100101011110111110100
+Matching length: 8,  A: 0x266ABDF4 0b00100110011010101011110111110100
+Matching length: 8,  A: 0x286ABDF4 0b00101000011010101011110111110100
+Matching length: 8,  A: 0x2A6ABDF4 0b00101010011010101011110111110100
+Matching length: 8,  A: 0x2A74BDF4 0b00101010011101001011110111110100
+Matching length: 8,  A: 0x2A76BDF4 0b00101010011101101011110111110100
+Matching length: 8,  A: 0x2B34BDF4 0b00101011001101001011110111110100
+
+Matching length: 8,  A: 0x2B37B9F4 0b00101011001101111011100111110100
+
+Matching length: 8,  A: 0x2B37BDF4 0b00101011001101111011110111110100
+Matching length: 8,  A: 0x2C6ABDF4 0b00101100011010101011110111110100
+Matching length: 8,  A: 0x2C72BDF4 0b00101100011100101011110111110100
+Matching length: 8,  A: 0x2E6ABDF4 0b00101110011010101011110111110100
+Matching length: 8,  A: 0x306ABDF4 0b00110000011010101011110111110100
+Matching length: 8,  A: 0x326ABDF4 0b00110010011010101011110111110100
+Matching length: 8,  A: 0x346ABDF4 0b00110100011010101011110111110100
+Matching length: 8,  A: 0x3472BDF4 0b00110100011100101011110111110100
+Matching length: 9,  A: 0x366ABDF4 0b00110110011010101011110111110100
+Matching length: 8,  A: 0x386ABDF4 0b00111000011010101011110111110100
+
+
+Matching length: 9,  A: 0x7C6ABDF4 0b01111100011010101011110111110100
+Matching length: 9,  A: 0x7C72BDF4 0b01111100011100101011110111110100
+Matching length: 9,  A: 0x7CB3B9F4 0b01111100101100111011100111110100
+Matching length: 9,  A: 0x7CB3BDF4 0b01111100101100111011110111110100
+Matching length: 9,  A: 0x7CB3F9F4 0b01111100101100111111100111110100
+Matching length: 9,  A: 0x7DBBB9F4 0b01111101101110111011100111110100
+Matching length: 9,  A: 0x7DBBBDF4 0b01111101101110111011110111110100
+
+Matching length: 10, A: 0x06C6ABDF4 0b00001101100011010101011110111110100
+Matching length: 10, A: 0x06C72BDF4 0b00001101100011100101011110111110100
+Matching length: 10, A: 0x1B66ABDF4 0b00110110110011010101011110111110100
+Matching length: 10, A: 0x23E6ABDF4 0b01000111110011010101011110111110100
+Matching length: 10, A: 0x2646ABDF4 0b01001100100011010101011110111110100
+Matching length: 10, A: 0x26472BDF4 0b01001100100011100101011110111110100
+Matching length: 10, A: 0x26C6ABDF4 0b01001101100011010101011110111110100
+Matching length: 10, A: 0x26C72BDF4 0b01001101100011100101011110111110100
+Matching length: 10, A: 0x27C6ABDF4 0b01001111100011010101011110111110100
+Matching length: 10, A: 0x27C72BDF4 0b01001111100011100101011110111110100
+Matching length: 10, A: 0x27CB3B9F4 0b01001111100101100111011100111110100
+Matching length: 10, A: 0x27CB3BDF4 0b01001111100101100111011110111110100
+Matching length: 10, A: 0x27CB3F9F4 0b01001111100101100111111100111110100
+Matching length: 10, A: 0x2BE6ABDF4 0b01010111110011010101011110111110100
+Matching length: 10, A: 0x5B66ABDF4 0b10110110110011010101011110111110100
+
+first valid solution: 0x21DA_7CB3_B9F4 0b001000011101101001111100101100111011100111110100
+
+smallest solution: 0x21DA7C6ABDF4 0b1000011101101001111100011010101011110111110100

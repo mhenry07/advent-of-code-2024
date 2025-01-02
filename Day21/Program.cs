@@ -1,6 +1,8 @@
 ﻿using System.Buffers.Text;
 using Core;
 
+// part 1 solution adapted from: https://observablehq.com/@jwolondon/advent-of-code-2024-day-21
+
 var start = TimeProvider.System.GetTimestamp();
 
 int? useExample = null;
